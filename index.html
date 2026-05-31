@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DEVLOG · 开发日志台账</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0e0f0d;
+    --bg-2:#16180f;
+    --panel:#171a13;
+    --panel-2:#1d2018;
+    --line:rgba(255,255,255,.10);
+    --line-strong:rgba(255,255,255,.18);
+    --ink:#ece8df;
+    --ink-dim:#8f8d80;
+    --ink-faint:#605e54;
+    --accent:#e3b341;
+    --c-commercial:#e3b341;
+    --c-volunteer:#82c875;
+    --c-personal:#6aa9e9;
+    --c-fun:#e87a90;
+    --ok:#82c875;
+    --warn:#e3b341;
+    --err:#e8675f;
+    --mono:'Space Mono','Noto Sans SC',monospace;
+    --sans:'IBM Plex Sans','Noto Sans SC',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--sans);
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    background-image:
+      radial-gradient(900px 500px at 85% -10%, rgba(227,179,65,.07), transparent 60%),
+      radial-gradient(700px 500px at -10% 110%, rgba(106,169,233,.05), transparent 60%);
+    background-attachment:fixed;
+    min-height:100vh;
+  }
+  ::selection{background:var(--accent);color:#000;}
+  a{color:inherit;}
+
+  /* ---------- header ---------- */
+  header{
+    position:sticky;top:0;z-index:30;
+    display:flex;align-items:center;gap:16px;
+    padding:14px 22px;
+    background:rgba(14,15,13,.82);
+    backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--line);
+  }
+  .logo{font-family:var(--mono);font-weight:700;font-size:18px;letter-spacing:.18em;display:flex;align-items:center;gap:10px;}
+  .logo .blip{width:9px;height:9px;border-radius:2px;background:var(--accent);box-shadow:0 0 12px var(--accent);animation:pulse 2.4s infinite;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+  .logo small{font-size:10px;color:var(--ink-faint);letter-spacing:.2em;font-weight:400;}
+  .spacer{flex:1;}
+
+  .sync{
+    display:flex;align-items:center;gap:8px;
+    font-family:var(--mono);font-size:11px;letter-spacing:.04em;
+    padding:6px 11px;border:1px solid var(--line);border-radius:999px;color:var(--ink-dim);
+    white-space:nowrap;
+  }
+  .sync .dot{width:8px;height:8px;border-radius:50%;background:var(--ink-faint);flex:none;}
+  .sync.idle .dot{background:var(--ink-faint);}
+  .sync.ok .dot{background:var(--ok);box-shadow:0 0 8px var(--ok);}
+  .sync.busy .dot{background:var(--warn);animation:pulse 1s infinite;}
+  .sync.dirty .dot{background:var(--warn);}
+  .sync.err .dot{background:var(--err);box-shadow:0 0 8px var(--err);}
+
+  button{font-family:var(--sans);cursor:pointer;color:var(--ink);}
+  .btn{
+    display:inline-flex;align-items:center;gap:7px;
+    background:var(--panel);border:1px solid var(--line);border-radius:8px;
+    padding:8px 13px;font-size:13px;transition:.16s;
+  }
+  .btn:hover{border-color:var(--line-strong);background:var(--panel-2);}
+  .btn.icon{padding:8px 10px;}
+  .btn.primary{background:var(--accent);color:#1a1607;border-color:var(--accent);font-weight:600;}
+  .btn.primary:hover{filter:brightness(1.07);background:var(--accent);}
+  .btn.ghost{background:transparent;}
+  .btn.danger:hover{border-color:var(--err);color:var(--err);}
+
+  /* ---------- layout ---------- */
+  main{max-width:1080px;margin:0 auto;padding:26px 22px 90px;}
+
+  /* stats */
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-bottom:24px;}
+  .stat{
+    border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:linear-gradient(160deg,var(--panel),rgba(23,26,19,.4));
+    position:relative;overflow:hidden;
+  }
+  .stat .n{font-family:var(--mono);font-size:30px;font-weight:700;line-height:1;}
+  .stat .l{font-size:11px;color:var(--ink-dim);margin-top:7px;letter-spacing:.03em;}
+  .stat .bar{position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent);opacity:.7;}
+
+  /* toolbar */
+  .toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:18px;}
+  .search{flex:1;min-width:200px;position:relative;}
+  .search input{
+    width:100%;background:var(--panel);border:1px solid var(--line);border-radius:9px;
+    padding:10px 12px 10px 34px;color:var(--ink);font-size:14px;font-family:var(--sans);
+  }
+  .search input:focus{outline:none;border-color:var(--accent);}
+  .search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);opacity:.5;}
+  select{
+    background:var(--panel);border:1px solid var(--line);border-radius:9px;color:var(--ink);
+    padding:10px 12px;font-size:13px;font-family:var(--sans);cursor:pointer;
+  }
+  select:focus{outline:none;border-color:var(--accent);}
+
+  /* filter chips for type */
+  .chips{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:20px;}
+  .chip{
+    font-size:12px;font-family:var(--mono);padding:5px 11px;border-radius:999px;
+    border:1px solid var(--line);color:var(--ink-dim);background:transparent;transition:.15s;
+  }
+  .chip[data-active="1"]{color:#000;font-weight:700;}
+  .chip.t-all[data-active="1"]{background:var(--ink);border-color:var(--ink);}
+  .chip.t-commercial[data-active="1"]{background:var(--c-commercial);border-color:var(--c-commercial);}
+  .chip.t-volunteer[data-active="1"]{background:var(--c-volunteer);border-color:var(--c-volunteer);}
+  .chip.t-personal[data-active="1"]{background:var(--c-personal);border-color:var(--c-personal);}
+  .chip.t-fun[data-active="1"]{background:var(--c-fun);border-color:var(--c-fun);}
+
+  /* ---------- project cards ---------- */
+  .list{display:flex;flex-direction:column;gap:14px;}
+  .card{
+    border:1px solid var(--line);border-radius:14px;background:var(--panel);
+    position:relative;overflow:hidden;transition:.18s;
+  }
+  .card:hover{border-color:var(--line-strong);}
+  .card .edge{position:absolute;left:0;top:0;bottom:0;width:4px;}
+  .edge.commercial{background:var(--c-commercial);}
+  .edge.volunteer{background:var(--c-volunteer);}
+  .edge.personal{background:var(--c-personal);}
+  .edge.fun{background:var(--c-fun);}
+
+  .card-head{display:flex;align-items:flex-start;gap:14px;padding:16px 18px 14px 22px;cursor:pointer;}
+  .card-title{font-size:18px;font-weight:600;letter-spacing:-.01em;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .card-body{flex:1;min-width:0;}
+  .card-desc{color:var(--ink-dim);font-size:13.5px;margin-top:6px;white-space:pre-wrap;}
+  .meta-row{display:flex;flex-wrap:wrap;gap:8px 14px;margin-top:11px;align-items:center;font-family:var(--mono);font-size:11px;color:var(--ink-faint);}
+  .meta-row a{color:var(--ink-dim);text-decoration:none;border-bottom:1px dotted var(--ink-faint);}
+  .meta-row a:hover{color:var(--accent);border-color:var(--accent);}
+
+  .tag{font-family:var(--mono);font-size:11px;padding:3px 9px;border-radius:6px;border:1px solid var(--line);letter-spacing:.02em;white-space:nowrap;}
+  .tag.type-commercial{color:var(--c-commercial);border-color:rgba(227,179,65,.4);background:rgba(227,179,65,.08);}
+  .tag.type-volunteer{color:var(--c-volunteer);border-color:rgba(130,200,117,.4);background:rgba(130,200,117,.08);}
+  .tag.type-personal{color:var(--c-personal);border-color:rgba(106,169,233,.4);background:rgba(106,169,233,.08);}
+  .tag.type-fun{color:var(--c-fun);border-color:rgba(232,122,144,.4);background:rgba(232,122,144,.08);}
+
+  .status{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;color:var(--ink-dim);white-space:nowrap;}
+  .status .sd{width:7px;height:7px;border-radius:50%;flex:none;}
+  .status.delivered .sd{background:var(--ok);box-shadow:0 0 7px rgba(130,200,117,.6);}
+  .status.inuse .sd{background:#4fd0c0;box-shadow:0 0 7px rgba(79,208,192,.6);}
+  .status.wip .sd{background:var(--warn);}
+  .status.idea .sd{background:var(--ink-faint);border:1px solid var(--ink-dim);background:transparent;}
+
+  .card-actions{display:flex;gap:4px;flex:none;}
+  .iconbtn{background:transparent;border:1px solid transparent;border-radius:7px;padding:6px;color:var(--ink-faint);transition:.14s;display:flex;}
+  .iconbtn:hover{color:var(--ink);border-color:var(--line);background:var(--panel-2);}
+  .iconbtn.del:hover{color:var(--err);}
+
+  /* updates */
+  .updates{border-top:1px solid var(--line);padding:0 18px 4px 22px;display:none;}
+  .card.open .updates{display:block;}
+  .card.open .chev{transform:rotate(90deg);}
+  .chev{transition:.18s;color:var(--ink-faint);}
+  .upd-head{display:flex;align-items:center;justify-content:space-between;padding:13px 0 9px;}
+  .upd-head h4{margin:0;font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--ink-faint);font-weight:400;}
+  .timeline{list-style:none;margin:0;padding:0 0 12px;}
+  .tl-item{position:relative;padding:0 0 14px 22px;}
+  .tl-item:before{content:"";position:absolute;left:4px;top:5px;bottom:-2px;width:1px;background:var(--line);}
+  .tl-item:last-child:before{display:none;}
+  .tl-dot{position:absolute;left:0;top:4px;width:9px;height:9px;border-radius:50%;background:var(--ink-faint);}
+  .tl-item.major .tl-dot{background:var(--accent);box-shadow:0 0 9px var(--accent);width:11px;height:11px;left:-1px;}
+  .tl-top{display:flex;align-items:center;gap:9px;flex-wrap:wrap;}
+  .tl-date{font-family:var(--mono);font-size:11px;color:var(--ink-faint);}
+  .vbadge{font-family:var(--mono);font-size:10px;padding:2px 7px;border-radius:5px;letter-spacing:.03em;}
+  .vbadge.major{background:rgba(227,179,65,.15);color:var(--accent);border:1px solid rgba(227,179,65,.4);}
+  .vbadge.minor{background:rgba(255,255,255,.05);color:var(--ink-dim);border:1px solid var(--line);}
+  .tl-note{font-size:13.5px;color:var(--ink);margin-top:4px;white-space:pre-wrap;}
+  .tl-del{margin-left:auto;}
+  .add-upd{margin:2px 0 14px;}
+
+  /* empty */
+  .empty{text-align:center;padding:70px 20px;color:var(--ink-faint);}
+  .empty .big{font-family:var(--mono);font-size:13px;letter-spacing:.1em;color:var(--ink-dim);margin-bottom:8px;}
+
+  /* ---------- modal ---------- */
+  .overlay{position:fixed;inset:0;background:rgba(6,7,5,.7);backdrop-filter:blur(4px);z-index:50;display:none;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto;}
+  .overlay.show{display:flex;}
+  .modal{
+    background:var(--bg-2);border:1px solid var(--line-strong);border-radius:16px;
+    width:100%;max-width:540px;box-shadow:0 30px 80px rgba(0,0,0,.6);
+    animation:rise .22s ease;
+  }
+  @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+  .modal h3{margin:0;padding:18px 22px;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:14px;letter-spacing:.1em;display:flex;align-items:center;gap:10px;}
+  .modal h3 .blip{width:8px;height:8px;border-radius:2px;background:var(--accent);}
+  .modal-body{padding:20px 22px;}
+  .modal-foot{padding:14px 22px 20px;display:flex;gap:10px;justify-content:flex-end;border-top:1px solid var(--line);}
+  .field{margin-bottom:15px;}
+  .field label{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--ink-dim);margin-bottom:6px;}
+  .field label .req{color:var(--accent);}
+  .field input,.field textarea,.field select{
+    width:100%;background:var(--panel);border:1px solid var(--line);border-radius:8px;
+    padding:10px 12px;color:var(--ink);font-size:14px;font-family:var(--sans);
+  }
+  .field textarea{resize:vertical;min-height:78px;}
+  .field input:focus,.field textarea:focus,.field select:focus{outline:none;border-color:var(--accent);}
+  .field .hint{font-size:11px;color:var(--ink-faint);margin-top:5px;font-family:var(--mono);line-height:1.5;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:13px;}
+  .radio-row{display:flex;gap:9px;}
+  .radio-row label{
+    flex:1;display:flex;align-items:center;justify-content:center;gap:7px;cursor:pointer;
+    border:1px solid var(--line);border-radius:8px;padding:9px;font-size:13px;font-family:var(--mono);transition:.15s;color:var(--ink-dim);
+  }
+  .radio-row input{display:none;}
+  .radio-row input:checked + span{color:var(--ink);}
+  .radio-row label:has(input:checked){border-color:var(--accent);background:rgba(227,179,65,.08);}
+  .warnbox{font-size:11.5px;color:var(--ink-dim);background:rgba(232,103,95,.07);border:1px solid rgba(232,103,95,.25);border-radius:8px;padding:10px 12px;line-height:1.6;margin-top:4px;font-family:var(--mono);}
+  .warnbox b{color:var(--err);}
+
+  .toast{
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);
+    background:var(--panel-2);border:1px solid var(--line-strong);border-radius:10px;
+    padding:11px 18px;font-size:13px;font-family:var(--mono);z-index:80;opacity:0;transition:.25s;pointer-events:none;
+    display:flex;align-items:center;gap:9px;box-shadow:0 10px 40px rgba(0,0,0,.5);
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .toast .td{width:8px;height:8px;border-radius:50%;background:var(--ok);}
+  .toast.err .td{background:var(--err);}
+
+  @media(max-width:560px){
+    .card-head{flex-wrap:wrap;}
+    .grid2{grid-template-columns:1fr;}
+    main{padding:20px 14px 80px;}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"><span class="blip"></span>DEVLOG<small>开发日志台账</small></div>
+  <div class="spacer"></div>
+  <div id="syncStatus" class="sync idle"><span class="dot"></span><span class="txt">未配置</span></div>
+  <button class="btn icon ghost" id="pullBtn" title="从 GitHub 拉取">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+  </button>
+  <button class="btn icon ghost" id="pushBtn" title="同步到 GitHub">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+  <button class="btn icon ghost" id="settingsBtn" title="设置">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+  </button>
+</header>
+
+<main>
+  <div class="stats" id="stats"></div>
+
+  <div class="toolbar">
+    <div class="search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4"/></svg>
+      <input id="search" placeholder="搜索项目名称、描述、更新内容…" />
+    </div>
+    <select id="statusFilter">
+      <option value="">全部状态</option>
+      <option value="delivered">已完成并交付</option>
+      <option value="inuse">已完成且持续使用中</option>
+      <option value="wip">半成品</option>
+      <option value="idea">想法</option>
+    </select>
+    <select id="sortBy">
+      <option value="updated">按最近更新</option>
+      <option value="created">按创建时间</option>
+      <option value="name">按名称</option>
+    </select>
+    <button class="btn primary" id="addBtn">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>
+      新建项目
+    </button>
+  </div>
+
+  <div class="chips" id="typeChips">
+    <button class="chip t-all" data-type="" data-active="1">全部</button>
+    <button class="chip t-commercial" data-type="commercial">商业项目</button>
+    <button class="chip t-volunteer" data-type="volunteer">志愿项目</button>
+    <button class="chip t-personal" data-type="personal">个人项目</button>
+    <button class="chip t-fun" data-type="fun">做着好玩</button>
+  </div>
+
+  <div class="list" id="list"></div>
+</main>
+
+<!-- ===== Project Modal ===== -->
+<div class="overlay" id="projModal">
+  <div class="modal">
+    <h3><span class="blip"></span><span id="projModalTitle">新建项目</span></h3>
+    <div class="modal-body">
+      <div class="field">
+        <label>项目名称 <span class="req">*</span></label>
+        <input id="f_name" placeholder="例如：个人作品集网站" />
+      </div>
+      <div class="grid2">
+        <div class="field">
+          <label>开发类型 <span class="req">*</span></label>
+          <select id="f_type">
+            <option value="commercial">商业项目</option>
+            <option value="volunteer">志愿项目</option>
+            <option value="personal">个人项目</option>
+            <option value="fun">做着好玩</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>状态 <span class="req">*</span></label>
+          <select id="f_status">
+            <option value="delivered">已完成并交付</option>
+            <option value="inuse">已完成且持续使用中</option>
+            <option value="wip">半成品</option>
+            <option value="idea">想法</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>描述</label>
+        <textarea id="f_desc" placeholder="项目简介、用到的技术、背景等…"></textarea>
+      </div>
+      <div class="grid2">
+        <div class="field">
+          <label>仓库 / 源码链接</label>
+          <input id="f_repo" placeholder="https://github.com/..." />
+        </div>
+        <div class="field">
+          <label>线上 / 演示链接</label>
+          <input id="f_live" placeholder="https://..." />
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn ghost" data-close>取消</button>
+      <button class="btn primary" id="saveProj">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Update Modal ===== -->
+<div class="overlay" id="updModal">
+  <div class="modal">
+    <h3><span class="blip"></span>添加更新记录</h3>
+    <div class="modal-body">
+      <div class="grid2">
+        <div class="field">
+          <label>日期</label>
+          <input type="date" id="u_date" />
+        </div>
+        <div class="field">
+          <label>更新类型</label>
+          <div class="radio-row">
+            <label><input type="radio" name="ukind" value="minor" checked><span>小版本</span></label>
+            <label><input type="radio" name="ukind" value="major"><span>大版本</span></label>
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label>更新内容 <span class="req">*</span></label>
+        <textarea id="u_note" placeholder="这次更新做了什么…"></textarea>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn ghost" data-close>取消</button>
+      <button class="btn primary" id="saveUpd">添加</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Settings Modal ===== -->
+<div class="overlay" id="setModal">
+  <div class="modal">
+    <h3><span class="blip"></span>GitHub 同步设置</h3>
+    <div class="modal-body">
+      <div class="field">
+        <label>GitHub 用户名 / 组织 (owner) <span class="req">*</span></label>
+        <input id="s_owner" placeholder="your-username" />
+      </div>
+      <div class="field">
+        <label>私有仓库名 (private repo) <span class="req">*</span></label>
+        <input id="s_repo" placeholder="my-data" />
+      </div>
+      <div class="grid2">
+        <div class="field">
+          <label>分支</label>
+          <input id="s_branch" placeholder="main" />
+        </div>
+        <div class="field">
+          <label>数据文件路径</label>
+          <input id="s_path" value="develop.json" />
+        </div>
+      </div>
+      <div class="field">
+        <label>Fine-grained Token <span class="req">*</span></label>
+        <input id="s_token" type="password" placeholder="github_pat_..." />
+        <div class="hint">权限要求：仅对该私有仓库授予 <b>Contents: Read and write</b>。建议设置较短有效期。</div>
+      </div>
+      <div class="warnbox">
+        <b>安全提示：</b>Token 保存在本机浏览器 localStorage 中，任何能访问此设备/浏览器的人都可读取。请勿在公共电脑使用，且只给最小权限（单仓库 Contents 读写）。
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn ghost" data-close>取消</button>
+      <button class="btn danger ghost" id="clearToken">清除 Token</button>
+      <button class="btn primary" id="saveSettings">保存并连接</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span class="td"></span><span class="tt"></span></div>
+
+<script>
+/* =========================================================
+   存储兜底（Claude 预览不支持 localStorage，做内存降级）
+   ========================================================= */
+const mem = {};
+const store = {
+  get(k){ try{ return localStorage.getItem(k); }catch(e){ return k in mem ? mem[k] : null; } },
+  set(k,v){ try{ localStorage.setItem(k,v); }catch(e){ mem[k]=v; } },
+  del(k){ try{ localStorage.removeItem(k); }catch(e){ delete mem[k]; } }
+};
+
+const CFG_KEY = 'devlog_config';
+const CACHE_KEY = 'devlog_cache';
+
+/* =========================================================
+   全局状态
+   ========================================================= */
+let config = { owner:'', repo:'', branch:'main', path:'develop.json', token:'' };
+let data = { meta:{ version:1, updatedAt:null }, projects:[] };
+let fileSha = null;            // 远端文件当前 sha，用于更新
+let saveTimer = null;
+let activeProjId = null;       // 添加更新 / 编辑时锚定
+let editingProjId = null;
+
+const TYPE_LABEL = { commercial:'商业项目', volunteer:'志愿项目', personal:'个人项目', fun:'做着好玩' };
+const STATUS_LABEL = { delivered:'已完成并交付', inuse:'已完成且持续使用中', wip:'半成品', idea:'想法' };
+
+/* =========================================================
+   工具
+   ========================================================= */
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const uid = () => (crypto.randomUUID ? crypto.randomUUID() : 'id-'+Date.now()+'-'+Math.random().toString(16).slice(2));
+const esc = s => (s??'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const today = () => new Date().toISOString().slice(0,10);
+
+function toast(msg, isErr){
+  const t = $('#toast'); $('.tt',t).textContent = msg;
+  t.classList.toggle('err', !!isErr); t.classList.add('show');
+  clearTimeout(t._tm); t._tm = setTimeout(()=>t.classList.remove('show'), 2600);
+}
+
+/* UTF-8 安全的 base64（GitHub Contents API 需要） */
+function utf8ToB64(str){
+  const bytes = new TextEncoder().encode(str);
+  let bin = ''; const chunk = 0x8000;
+  for(let i=0;i<bytes.length;i+=chunk) bin += String.fromCharCode.apply(null, bytes.subarray(i,i+chunk));
+  return btoa(bin);
+}
+function b64ToUtf8(b64){
+  const bin = atob((b64||'').replace(/\s/g,''));
+  const bytes = new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i);
+  return new TextDecoder().decode(bytes);
+}
+
+function setSync(state, text){
+  const el = $('#syncStatus');
+  el.className = 'sync ' + state;
+  $('.txt', el).textContent = text;
+}
+
+/* =========================================================
+   GitHub API
+   ========================================================= */
+function apiBase(){ return `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${encodeURIComponent(config.path).replace(/%2F/g,'/')}`; }
+function ghHeaders(){
+  return {
+    'Authorization': 'Bearer ' + config.token,
+    'Accept': 'application/vnd.github+json',
+    'X-GitHub-Api-Version': '2022-11-28'
+  };
+}
+function configured(){ return config.owner && config.repo && config.token; }
+
+async function ghPull(){
+  if(!configured()){ setSync('idle','未配置'); return; }
+  setSync('busy','拉取中…');
+  try{
+    const url = apiBase() + '?ref=' + encodeURIComponent(config.branch||'main') + '&t=' + Date.now();
+    const res = await fetch(url, { headers: ghHeaders(), cache:'no-store' });
+    if(res.status === 404){
+      // 文件还不存在：视为空，等首次推送创建
+      fileSha = null; data = { meta:{version:1,updatedAt:null}, projects:[] };
+      cacheLocal(); render(); setSync('ok','已连接 · 文件待创建'); toast('已连接，develop.json 尚不存在，保存后将自动创建');
+      return;
+    }
+    if(!res.ok) throw new Error(await errMsg(res));
+    const json = await res.json();
+    fileSha = json.sha;
+    const text = b64ToUtf8(json.content);
+    const parsed = JSON.parse(text);
+    data = normalize(parsed);
+    cacheLocal(); render(); setSync('ok','已同步');
+    toast('已从 GitHub 拉取最新数据');
+  }catch(e){
+    setSync('err','拉取失败'); toast('拉取失败：'+e.message, true);
+  }
+}
+
+async function ghPush(silent){
+  if(!configured()){ setSync('idle','未配置'); if(!silent) toast('请先在设置中配置 GitHub', true); return; }
+  setSync('busy','同步中…');
+  data.meta = data.meta || {}; data.meta.updatedAt = new Date().toISOString(); data.meta.version = 1;
+  try{
+    const body = {
+      message: `chore(devlog): update ${config.path} @ ${new Date().toISOString()}`,
+      content: utf8ToB64(JSON.stringify(data, null, 2)),
+      branch: config.branch || 'main'
+    };
+    if(fileSha) body.sha = fileSha;
+    let res = await fetch(apiBase(), { method:'PUT', headers:{...ghHeaders(),'Content-Type':'application/json'}, body: JSON.stringify(body) });
+
+    // sha 冲突（远端被改过）：重新取 sha 再试一次
+    if(res.status === 409 || res.status === 422){
+      const cur = await fetch(apiBase()+'?ref='+encodeURIComponent(config.branch||'main')+'&t='+Date.now(), {headers:ghHeaders(),cache:'no-store'});
+      if(cur.ok){ fileSha = (await cur.json()).sha; body.sha = fileSha; }
+      res = await fetch(apiBase(), { method:'PUT', headers:{...ghHeaders(),'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    }
+    if(!res.ok) throw new Error(await errMsg(res));
+    const json = await res.json();
+    fileSha = json.content.sha;
+    cacheLocal(); setSync('ok','已同步'); if(!silent) toast('已同步到 GitHub');
+  }catch(e){
+    setSync('err','同步失败'); toast('同步失败：'+e.message, true);
+  }
+}
+
+async function errMsg(res){
+  let m = res.status + ' ' + res.statusText;
+  try{ const j = await res.json(); if(j.message) m = j.message; }catch(e){}
+  if(res.status===401) m='Token 无效或已过期';
+  if(res.status===403) m='权限不足（需 Contents 读写）或触发限流';
+  if(res.status===404 && m.includes('Not Found')) m='仓库或路径不存在，请检查 owner/repo/分支';
+  return m;
+}
+
+function scheduleSync(){
+  cacheLocal();
+  if(!configured()){ setSync('idle','未配置（本地）'); return; }
+  setSync('dirty','待同步…');
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(()=> ghPush(true), 1500);
+}
+
+/* =========================================================
+   数据规范化 & 本地缓存
+   ========================================================= */
+function normalize(d){
+  d = d || {}; d.meta = d.meta || {version:1}; d.projects = Array.isArray(d.projects)?d.projects:[];
+  d.projects.forEach(p=>{
+    p.id = p.id || uid();
+    p.updates = Array.isArray(p.updates)?p.updates:[];
+    p.updates.forEach(u=>{ u.id = u.id || uid(); u.kind = (u.kind==='major'?'major':'minor'); });
+  });
+  return d;
+}
+function cacheLocal(){
+  store.set(CACHE_KEY, JSON.stringify({ data, fileSha }));
+}
+function loadCache(){
+  const raw = store.get(CACHE_KEY);
+  if(raw){ try{ const c = JSON.parse(raw); data = normalize(c.data); fileSha = c.fileSha||null; }catch(e){} }
+}
+
+/* =========================================================
+   渲染
+   ========================================================= */
+let filter = { type:'', status:'', q:'', sort:'updated' };
+
+function lastUpdateTime(p){
+  if(!p.updates || !p.updates.length) return p.createdAt || '';
+  return p.updates.map(u=>u.date).sort().slice(-1)[0];
+}
+
+function render(){
+  renderStats();
+  renderList();
+}
+
+function renderStats(){
+  const ps = data.projects;
+  const by = k => ps.filter(p=>p.status===k).length;
+  const items = [
+    { n: ps.length, l:'项目总数' },
+    { n: by('delivered')+by('inuse'), l:'已完成', c:'var(--ok)' },
+    { n: by('wip'), l:'半成品', c:'var(--warn)' },
+    { n: by('idea'), l:'想法', c:'var(--ink-faint)' },
+    { n: ps.reduce((a,p)=>a+(p.updates?p.updates.length:0),0), l:'更新记录' },
+  ];
+  $('#stats').innerHTML = items.map(i=>`
+    <div class="stat"><div class="bar" style="background:${i.c||'var(--accent)'}"></div>
+      <div class="n">${i.n}</div><div class="l">${i.l}</div></div>`).join('');
+}
+
+function renderList(){
+  let ps = data.projects.slice();
+  if(filter.type) ps = ps.filter(p=>p.type===filter.type);
+  if(filter.status) ps = ps.filter(p=>p.status===filter.status);
+  if(filter.q){
+    const q = filter.q.toLowerCase();
+    ps = ps.filter(p=>{
+      const hay = [p.name,p.desc,...(p.updates||[]).map(u=>u.note)].join(' ').toLowerCase();
+      return hay.includes(q);
+    });
+  }
+  if(filter.sort==='name') ps.sort((a,b)=>(a.name||'').localeCompare(b.name||'','zh'));
+  else if(filter.sort==='created') ps.sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
+  else ps.sort((a,b)=>(lastUpdateTime(b)||'').localeCompare(lastUpdateTime(a)||''));
+
+  const list = $('#list');
+  if(!data.projects.length){
+    list.innerHTML = `<div class="empty"><div class="big">// 暂无记录</div><div>点击右上「新建项目」开始记录你的第一个开发日志</div></div>`;
+    return;
+  }
+  if(!ps.length){
+    list.innerHTML = `<div class="empty"><div class="big">// 无匹配结果</div><div>试试调整筛选条件或搜索词</div></div>`;
+    return;
+  }
+
+  list.innerHTML = ps.map(p=>{
+    const ups = (p.updates||[]).slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+    const upHtml = ups.length ? ups.map(u=>`
+      <li class="tl-item ${u.kind}">
+        <span class="tl-dot"></span>
+        <div class="tl-top">
+          <span class="tl-date">${esc(u.date||'')}</span>
+          <span class="vbadge ${u.kind}">${u.kind==='major'?'大版本':'小版本'}</span>
+          <button class="iconbtn del tl-del" data-act="delupd" data-pid="${p.id}" data-uid="${u.id}" title="删除此更新">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
+          </button>
+        </div>
+        <div class="tl-note">${esc(u.note||'')}</div>
+      </li>`).join('') : `<div style="color:var(--ink-faint);font-size:13px;padding:2px 0 12px;font-family:var(--mono)">// 还没有更新记录</div>`;
+
+    const links = [];
+    if(p.repoUrl) links.push(`<a href="${esc(p.repoUrl)}" target="_blank" rel="noopener">源码 ↗</a>`);
+    if(p.liveUrl) links.push(`<a href="${esc(p.liveUrl)}" target="_blank" rel="noopener">演示 ↗</a>`);
+
+    return `
+    <div class="card" data-id="${p.id}">
+      <div class="edge ${p.type}"></div>
+      <div class="card-head" data-act="toggle">
+        <div class="card-body">
+          <div class="card-title">
+            <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
+            ${esc(p.name||'(未命名)')}
+            <span class="tag type-${p.type}">${TYPE_LABEL[p.type]||p.type}</span>
+            <span class="status ${p.status}"><span class="sd"></span>${STATUS_LABEL[p.status]||p.status}</span>
+          </div>
+          ${p.desc?`<div class="card-desc">${esc(p.desc)}</div>`:''}
+          <div class="meta-row">
+            <span>更新 ${ (p.updates||[]).length } 次</span>
+            ${lastUpdateTime(p)?`<span>最近 ${esc(lastUpdateTime(p))}</span>`:''}
+            ${p.createdAt?`<span>建于 ${esc(p.createdAt)}</span>`:''}
+            ${links.join('')}
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="iconbtn" data-act="edit" data-id="${p.id}" title="编辑">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
+          </button>
+          <button class="iconbtn del" data-act="delete" data-id="${p.id}" title="删除">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="updates">
+        <div class="upd-head"><h4>更新历史</h4></div>
+        <button class="btn ghost add-upd" data-act="addupd" data-id="${p.id}">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg> 添加更新
+        </button>
+        <ul class="timeline">${upHtml}</ul>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* =========================================================
+   交互
+   ========================================================= */
+// 列表内事件委托
+$('#list').addEventListener('click', e=>{
+  const btn = e.target.closest('[data-act]');
+  if(!btn) return;
+  const act = btn.dataset.act;
+  if(act==='toggle'){ btn.closest('.card').classList.toggle('open'); return; }
+  e.stopPropagation();
+  if(act==='edit') openProjModal(btn.dataset.id);
+  else if(act==='delete') deleteProj(btn.dataset.id);
+  else if(act==='addupd') openUpdModal(btn.dataset.id);
+  else if(act==='delupd') deleteUpd(btn.dataset.pid, btn.dataset.uid);
+});
+
+// 类型筛选 chips
+$('#typeChips').addEventListener('click', e=>{
+  const c = e.target.closest('.chip'); if(!c) return;
+  $$('#typeChips .chip').forEach(x=>x.dataset.active='0');
+  c.dataset.active='1'; filter.type = c.dataset.type; renderList();
+});
+$('#search').addEventListener('input', e=>{ filter.q=e.target.value; renderList(); });
+$('#statusFilter').addEventListener('change', e=>{ filter.status=e.target.value; renderList(); });
+$('#sortBy').addEventListener('change', e=>{ filter.sort=e.target.value; renderList(); });
+
+// ---- 项目增改 ----
+$('#addBtn').addEventListener('click', ()=>openProjModal(null));
+function openProjModal(id){
+  editingProjId = id;
+  const p = id ? data.projects.find(x=>x.id===id) : null;
+  $('#projModalTitle').textContent = p ? '编辑项目' : '新建项目';
+  $('#f_name').value = p?.name||'';
+  $('#f_type').value = p?.type||'personal';
+  $('#f_status').value = p?.status||'idea';
+  $('#f_desc').value = p?.desc||'';
+  $('#f_repo').value = p?.repoUrl||'';
+  $('#f_live').value = p?.liveUrl||'';
+  showModal('#projModal'); setTimeout(()=>$('#f_name').focus(),50);
+}
+$('#saveProj').addEventListener('click', ()=>{
+  const name = $('#f_name').value.trim();
+  if(!name){ toast('请填写项目名称', true); return; }
+  const payload = {
+    name,
+    type: $('#f_type').value,
+    status: $('#f_status').value,
+    desc: $('#f_desc').value.trim(),
+    repoUrl: $('#f_repo').value.trim(),
+    liveUrl: $('#f_live').value.trim(),
+  };
+  if(editingProjId){
+    const p = data.projects.find(x=>x.id===editingProjId);
+    Object.assign(p, payload);
+  }else{
+    data.projects.unshift({ id:uid(), createdAt:today(), updates:[], ...payload });
+  }
+  hideModal('#projModal'); render(); scheduleSync();
+});
+
+function deleteProj(id){
+  const p = data.projects.find(x=>x.id===id);
+  if(!confirm(`确认删除项目「${p?.name||''}」及其全部更新记录？`)) return;
+  data.projects = data.projects.filter(x=>x.id!==id);
+  render(); scheduleSync();
+}
+
+// ---- 更新记录 ----
+function openUpdModal(pid){
+  activeProjId = pid;
+  $('#u_date').value = today();
+  $('#u_note').value = '';
+  document.querySelector('input[name=ukind][value=minor]').checked = true;
+  showModal('#updModal'); setTimeout(()=>$('#u_note').focus(),50);
+}
+$('#saveUpd').addEventListener('click', ()=>{
+  const note = $('#u_note').value.trim();
+  if(!note){ toast('请填写更新内容', true); return; }
+  const p = data.projects.find(x=>x.id===activeProjId);
+  if(!p) return;
+  p.updates.push({ id:uid(), date: $('#u_date').value||today(), kind: document.querySelector('input[name=ukind]:checked').value, note });
+  hideModal('#updModal'); render();
+  // 保持展开
+  const card = document.querySelector(`.card[data-id="${activeProjId}"]`); if(card) card.classList.add('open');
+  scheduleSync();
+});
+function deleteUpd(pid, uid_){
+  const p = data.projects.find(x=>x.id===pid); if(!p) return;
+  p.updates = p.updates.filter(u=>u.id!==uid_);
+  render(); const card = document.querySelector(`.card[data-id="${pid}"]`); if(card) card.classList.add('open');
+  scheduleSync();
+}
+
+// ---- 设置 ----
+$('#settingsBtn').addEventListener('click', ()=>{
+  $('#s_owner').value=config.owner; $('#s_repo').value=config.repo;
+  $('#s_branch').value=config.branch||'main'; $('#s_path').value=config.path||'develop.json';
+  $('#s_token').value=config.token;
+  showModal('#setModal');
+});
+$('#saveSettings').addEventListener('click', async ()=>{
+  config = {
+    owner: $('#s_owner').value.trim(),
+    repo: $('#s_repo').value.trim(),
+    branch: $('#s_branch').value.trim()||'main',
+    path: $('#s_path').value.trim()||'develop.json',
+    token: $('#s_token').value.trim(),
+  };
+  store.set(CFG_KEY, JSON.stringify(config));
+  hideModal('#setModal');
+  if(configured()){ await ghPull(); } else { setSync('idle','未配置'); }
+});
+$('#clearToken').addEventListener('click', ()=>{
+  config.token=''; store.set(CFG_KEY, JSON.stringify(config)); $('#s_token').value='';
+  setSync('idle','未配置'); toast('Token 已清除');
+});
+$('#pullBtn').addEventListener('click', ()=>ghPull());
+$('#pushBtn').addEventListener('click', ()=>ghPush(false));
+
+// ---- modal 公共 ----
+function showModal(sel){ $(sel).classList.add('show'); }
+function hideModal(sel){ $(sel).classList.remove('show'); }
+$$('.overlay').forEach(ov=>{
+  ov.addEventListener('click', e=>{ if(e.target===ov || e.target.closest('[data-close]')) ov.classList.remove('show'); });
+});
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') $$('.overlay.show').forEach(o=>o.classList.remove('show')); });
+
+/* =========================================================
+   启动
+   ========================================================= */
+(function init(){
+  const raw = store.get(CFG_KEY);
+  if(raw){ try{ config = Object.assign(config, JSON.parse(raw)); }catch(e){} }
+  loadCache();          // 先用本地缓存秒开
+  render();
+  if(configured()){ setSync('ok','已连接'); ghPull(); }   // 再拉取最新
+  else setSync('idle','未配置');
+})();
+</script>
+</body>
+</html>
