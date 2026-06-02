@@ -314,6 +314,10 @@
       <option value="created">按创建时间</option>
       <option value="name">按名称</option>
     </select>
+    <button class="btn ghost" id="importBtn">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15V3M8 11l4 4 4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+      导入归档
+    </button>
     <button class="btn primary" id="addBtn">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>
       新建项目
@@ -436,6 +440,25 @@
       <button class="btn ghost" data-close>取消</button>
       <button class="btn danger ghost" id="resetTpl">恢复默认</button>
       <button class="btn primary" id="saveTpl">保存模板</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Import Modal ===== -->
+<div class="overlay" id="importModal">
+  <div class="modal">
+    <h3><span class="blip"></span>导入归档（粘贴 JSON）</h3>
+    <div class="modal-body">
+      <div class="field">
+        <label>粘贴某个窗口生成的 JSON</label>
+        <textarea id="imp_text" style="min-height:200px;font-family:var(--mono);font-size:12px;line-height:1.55" placeholder='支持单个项目对象、项目数组，或 {"projects":[...]}；可直接粘贴含 ```json 代码块的整段文本。'></textarea>
+        <div class="hint">同名项目会自动合并：更新介绍/描述/状态，并追加新的更新（重复的更新会跳过）。新名字则作为新项目加入。</div>
+      </div>
+      <div id="imp_report" class="warnbox" style="display:none;background:rgba(130,200,117,.07);border-color:rgba(130,200,117,.25);color:var(--ink)"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn ghost" data-close>关闭</button>
+      <button class="btn primary" id="doImport">解析并导入</button>
     </div>
   </div>
 </div>
@@ -1008,6 +1031,82 @@ $('#saveTpl').addEventListener('click', ()=>{
   toast('Prompt 模板已保存');
 });
 $('#resetTpl').addEventListener('click', ()=>{ $('#p_tpl').value = DEFAULT_PROMPT; });
+
+// ---- 导入归档 ----
+$('#importBtn').addEventListener('click', ()=>{
+  $('#imp_text').value=''; const r=$('#imp_report'); r.style.display='none'; r.innerHTML='';
+  showModal('#importModal'); setTimeout(()=>$('#imp_text').focus(),50);
+});
+function extractJSON(raw){
+  let s = (raw||'').trim();
+  const fence = s.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  if(fence) s = fence[1].trim();
+  try{ return JSON.parse(s); }catch(e){}
+  const oi=s.indexOf('{'), ai=s.indexOf('[');
+  let start = oi===-1?ai : ai===-1?oi : Math.min(oi,ai);
+  if(start>=0){
+    const end = Math.max(s.lastIndexOf('}'), s.lastIndexOf(']'));
+    if(end>start){ try{ return JSON.parse(s.slice(start,end+1)); }catch(e){} }
+  }
+  return undefined;
+}
+function mergeImport(incoming){
+  let arr;
+  if(Array.isArray(incoming)) arr = incoming;
+  else if(incoming && Array.isArray(incoming.projects)) arr = incoming.projects;
+  else if(incoming && incoming.name) arr = [incoming];
+  else return { error:'未识别的结构，需要项目对象、项目数组，或 {projects:[...]}' };
+
+  const report = { added:[], merged:[], updates:0 };
+  arr.forEach(src=>{
+    if(!src || !src.name) return;
+    const ups = Array.isArray(src.updates)?src.updates:[];
+    const norm = u => ({ id:uid(), date:(u.date||'').trim(), kind: u.kind==='major'?'major':'minor', note:(u.note||'').trim() });
+    const exist = data.projects.find(p=> (p.name||'').trim().toLowerCase() === String(src.name).trim().toLowerCase());
+    if(exist){
+      if(src.desc) exist.desc = src.desc;
+      if(src.featureIntro) exist.featureIntro = src.featureIntro;
+      if(src.type && TYPE_LABEL[src.type]) exist.type = src.type;
+      if(src.status && STATUS_LABEL[src.status]) exist.status = src.status;
+      let cnt=0;
+      ups.forEach(u=>{
+        const k=(u.date||'')+'|'+(u.kind||'')+'|'+(u.note||'');
+        const dup=(exist.updates||[]).some(e=>((e.date||'')+'|'+(e.kind||'')+'|'+(e.note||''))===k);
+        if(!dup){ exist.updates.push(norm(u)); cnt++; }
+      });
+      report.merged.push({name:exist.name,n:cnt}); report.updates+=cnt;
+    }else{
+      const np = {
+        id:uid(), name:String(src.name),
+        type:(src.type && TYPE_LABEL[src.type])?src.type:'personal',
+        status:(src.status && STATUS_LABEL[src.status])?src.status:'wip',
+        desc:src.desc||'', featureIntro:src.featureIntro||'',
+        repoUrl:src.repoUrl||'', liveUrl:src.liveUrl||'',
+        createdAt:(src.createdAt||'').trim()||today(),
+        updates: ups.map(norm)
+      };
+      data.projects.unshift(np);
+      report.added.push({name:np.name,n:np.updates.length}); report.updates+=np.updates.length;
+    }
+  });
+  return { report };
+}
+$('#doImport').addEventListener('click', ()=>{
+  const parsed = extractJSON($('#imp_text').value);
+  const box = $('#imp_report');
+  if(parsed===undefined){ box.style.display='block'; box.style.background='rgba(232,103,95,.07)'; box.style.borderColor='rgba(232,103,95,.25)'; box.innerHTML='<b>解析失败：</b>没找到有效的 JSON。请确认粘贴了完整的 { … } 或 [ … ]。'; return; }
+  const res = mergeImport(parsed);
+  if(res.error){ box.style.display='block'; box.style.background='rgba(232,103,95,.07)'; box.style.borderColor='rgba(232,103,95,.25)'; box.innerHTML='<b>导入失败：</b>'+esc(res.error); return; }
+  render(); scheduleSync();
+  const r=res.report;
+  const lines=[];
+  r.added.forEach(x=>lines.push(`＋ 新增「${esc(x.name)}」（${x.n} 条更新）`));
+  r.merged.forEach(x=>lines.push(`↻ 合并「${esc(x.name)}」（追加 ${x.n} 条更新）`));
+  if(!lines.length) lines.push('没有可导入的项目（缺少 name 字段？）');
+  box.style.display='block'; box.style.background='rgba(130,200,117,.07)'; box.style.borderColor='rgba(130,200,117,.25)';
+  box.innerHTML = lines.join('<br>') + `<br><br>共写入 ${r.updates} 条更新，已开始同步。`;
+  toast('导入完成');
+});
 
 // ---- modal 公共 ----
 function showModal(sel){ $(sel).classList.add('show'); }
