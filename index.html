@@ -189,6 +189,11 @@
   .tl-del{margin-left:auto;}
   .add-upd{margin:2px 0 14px;}
 
+  /* notes / recap block */
+  .notes-block{border-top:1px solid var(--line);padding:13px 0 16px;}
+  .notes-block h4{margin:0 0 7px;font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--ink-faint);font-weight:400;}
+  .notes-body{font-size:13.5px;color:var(--ink-dim);white-space:pre-wrap;line-height:1.62;}
+
   /* feature intro block */
   .feat{
     margin:14px 0 4px;border:1px solid rgba(227,179,65,.25);border-radius:11px;
@@ -372,6 +377,11 @@
         <label>最新版本功能介绍</label>
         <textarea id="f_feat" placeholder="当前版本能做什么、面向用户的核心价值…（每次更新后修改这里）"></textarea>
         <div class="hint">这是展示在卡片里的「当前版本能力」。展开项目后可一键复制更新 Prompt，让 AI 帮你重写。</div>
+      </div>
+      <div class="field">
+        <label>项目小结 / 备注</label>
+        <textarea id="f_notes" placeholder="开发过程的人类可读小结：里程碑、踩过的坑及解决办法等…"></textarea>
+        <div class="hint">归档 Prompt 的「人类可读小结」会放进这里。</div>
       </div>
       <div class="grid2">
         <div class="field">
@@ -679,6 +689,7 @@ function normalize(d){
   d.projects.forEach(p=>{
     p.id = p.id || uid();
     if(typeof p.featureIntro !== 'string') p.featureIntro = '';
+    if(typeof p.notes !== 'string') p.notes = '';
     p.updates = Array.isArray(p.updates)?p.updates:[];
     p.updates.forEach(u=>{ u.id = u.id || uid(); u.kind = (u.kind==='major'?'major':'minor'); });
   });
@@ -876,6 +887,7 @@ function renderList(){
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg> 添加更新
         </button>
         <ul class="timeline">${upHtml}</ul>
+        ${p.notes?`<div class="notes-block"><h4>项目小结 / 备注</h4><div class="notes-body">${esc(p.notes)}</div></div>`:''}
       </div>
     </div>`;
   }).join('');
@@ -932,6 +944,7 @@ function openProjModal(id){
   $('#f_status').value = p?.status||'idea';
   $('#f_desc').value = p?.desc||'';
   $('#f_feat').value = p?.featureIntro||'';
+  $('#f_notes').value = p?.notes||'';
   $('#f_repo').value = p?.repoUrl||'';
   $('#f_live').value = p?.liveUrl||'';
   showModal('#projModal'); setTimeout(()=>$('#f_name').focus(),50);
@@ -945,6 +958,7 @@ $('#saveProj').addEventListener('click', ()=>{
     status: $('#f_status').value,
     desc: $('#f_desc').value.trim(),
     featureIntro: $('#f_feat').value.trim(),
+    notes: $('#f_notes').value.trim(),
     repoUrl: $('#f_repo').value.trim(),
     liveUrl: $('#f_live').value.trim(),
   };
@@ -1066,6 +1080,7 @@ function mergeImport(incoming){
     if(exist){
       if(src.desc) exist.desc = src.desc;
       if(src.featureIntro) exist.featureIntro = src.featureIntro;
+      if(src.notes) exist.notes = src.notes;
       if(src.type && TYPE_LABEL[src.type]) exist.type = src.type;
       if(src.status && STATUS_LABEL[src.status]) exist.status = src.status;
       let cnt=0;
@@ -1080,7 +1095,7 @@ function mergeImport(incoming){
         id:uid(), name:String(src.name),
         type:(src.type && TYPE_LABEL[src.type])?src.type:'personal',
         status:(src.status && STATUS_LABEL[src.status])?src.status:'wip',
-        desc:src.desc||'', featureIntro:src.featureIntro||'',
+        desc:src.desc||'', featureIntro:src.featureIntro||'', notes:src.notes||'',
         repoUrl:src.repoUrl||'', liveUrl:src.liveUrl||'',
         createdAt:(src.createdAt||'').trim()||today(),
         updates: ups.map(norm)
