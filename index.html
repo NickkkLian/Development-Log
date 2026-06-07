@@ -554,8 +554,8 @@ let editingProjId = null;
 const TYPE_LABEL = { commercial:'商业项目', volunteer:'志愿项目', personal:'个人项目', fun:'做着好玩' };
 const STATUS_LABEL = { delivered:'已完成并交付', inuse:'已完成且持续使用中', wip:'半成品', idea:'想法' };
 
-// 本数据库专属标签：写进导出 JSON 每个 item 的 tags，避免与其它库撞名。需要改名改这里即可。
-const DATASET_TAG = 'develop';
+// 本数据库唯一标识（dbId）：用于导出顶层字段、跨库去重与导出文件名，全小写无空格，请固定不变。
+const DB_ID = 'develop';
 
 const DEFAULT_PROMPT =
 `你是一名产品文案助手。下面是我的一个开发项目，请根据「最近更新」帮我重写一段「最新版本的功能介绍」。
@@ -1171,11 +1171,11 @@ function buildExportData(){
       summary: p.desc || '',
       category: TYPE_LABEL[p.type] || '',
       content: p.featureIntro || '',
-      tags: [DATASET_TAG],
+      tags: [],
       updatedAt: lastUpdateTime(p) || ''
     }))
   }));
-  return { title:'开发日志台账', generatedAt:new Date().toISOString(), sections };
+  return { dbId: DB_ID, title:'开发日志台账', generatedAt:new Date().toISOString(), sections };
 }
 $('#exportBtn').addEventListener('click', ()=>{
   const count = data.projects.filter(p=>p.public).length;
@@ -1183,7 +1183,7 @@ $('#exportBtn').addEventListener('click', ()=>{
   const blob = new Blob([JSON.stringify(buildExportData(), null, 2)], {type:'application/json'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url; a.download = `devlog-public-${today().replace(/-/g,'')}.json`;
+  a.href = url; a.download = `${DB_ID}.public.json`;
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   setTimeout(()=>URL.revokeObjectURL(url), 1000);
   toast(`已导出 ${count} 个公开条目`);
