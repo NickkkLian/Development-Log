@@ -1180,14 +1180,39 @@ function buildExportData(){
 $('#exportBtn').addEventListener('click', ()=>{
   const count = data.projects.filter(p=>p.public).length;
   if(!count){ toast('还没有勾选「公开展示」的条目', true); return; }
-  const blob = new Blob([JSON.stringify(buildExportData(), null, 2)], {type:'application/json'});
+  publishPublic(`${DB_ID}.public.json`, JSON.stringify(buildExportData(), null, 2), count);
+});
+
+// 发布公开数据：直接写入 GitHub 数据仓库（与主数据同仓库，根目录）；
+// 未配置 GitHub 或发布失败时回退为本地下载
+async function publishPublic(filename, json, count){
+  if(configured()){
+    try{
+      setSync('busy','发布公开数据…');
+      const PUBLIC_REPO = 'Database-Public'; // 公开数据专用仓库（public）——网站只从这里读取，碰不到私有库
+      const url = `https://api.github.com/repos/${config.owner}/${PUBLIC_REPO}/contents/${encodeURIComponent(filename)}`;
+      const head = await fetch(url+'?t='+Date.now(), {headers:ghHeaders(),cache:'no-store'});
+      const sha = head.ok ? (await head.json()).sha : undefined;
+      const body = { message:`publish ${filename} (${count} entries)`, content: utf8ToB64(json) };
+      if(sha) body.sha = sha;
+      const res = await fetch(url, { method:'PUT', headers:{...ghHeaders(),'Content-Type':'application/json'}, body: JSON.stringify(body) });
+      if(!res.ok) throw new Error(await errMsg(res));
+      setSync('ok','已同步');
+      toast(`已发布 ${count} 个公开条目 → ${filename}`);
+      return;
+    }catch(e){
+      setSync('err','发布失败');
+      toast('发布失败：'+e.message+'，已转为本地下载', true);
+    }
+  }
+  const blob = new Blob([json], {type:'application/json'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url; a.download = `${DB_ID}.public.json`;
+  a.href = url; a.download = filename;
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   setTimeout(()=>URL.revokeObjectURL(url), 1000);
-  toast(`已导出 ${count} 个公开条目`);
-});
+  toast(`已导出 ${count} 个公开条目（本地下载）`);
+}
 
 // ---- modal 公共 ----
 function showModal(sel){ $(sel).classList.add('show'); }
