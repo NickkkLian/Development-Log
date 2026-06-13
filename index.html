@@ -726,7 +726,8 @@ let filter = { type:'', status:'', q:'', sort:'updated' };
 
 function lastUpdateTime(p){
   if(!p.updates || !p.updates.length) return p.createdAt || '';
-  return p.updates.map(u=>u.date).sort().slice(-1)[0];
+  const last = [...p.updates].reverse().find(u=>u.date);
+  return last ? last.date : (p.createdAt || '');
 }
 
 /* 当前版本号：主版本=大版本次数，次版本=小版本次数 */
@@ -737,10 +738,9 @@ function versionOf(p){
 }
 /* 每条更新「累积到那一刻」的版本号（按日期、再按录入顺序） */
 function runningVersions(p){
-  const arr = (p.updates||[]).map((u,i)=>({u,i}));
-  arr.sort((a,b)=> ((a.u.date||'').localeCompare(b.u.date||'')) || (a.i-b.i));
+  // 数组顺序（旧→新）即权威时间线：版本号按位置累计，与日期是否填写无关
   let maj=0,min=0; const map={};
-  arr.forEach(({u})=>{ if(u.kind==='major') maj++; else min++; map[u.id]=maj+'.'+min; });
+  (p.updates||[]).forEach(u=>{ if(u.kind==='major') maj++; else min++; map[u.id]=maj+'.'+min; });
   return map;
 }
 
@@ -820,7 +820,7 @@ function renderList(){
   list.innerHTML = ps.map(p=>{
     const ver = versionOf(p);
     const verMap = runningVersions(p);
-    const ups = (p.updates||[]).slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+    const ups = (p.updates||[]).slice().reverse(); // 数组逆序：新版本号在上、旧在下
     const upHtml = ups.length ? ups.map(u=>`
       <li class="tl-item ${u.kind}">
         <span class="tl-dot"></span>
