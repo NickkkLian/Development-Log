@@ -288,6 +288,12 @@
     .grid2{grid-template-columns:1fr;}
     main{padding:20px 14px 80px;}
   }
+  /* [hub-mobile] 手机端：头部紧凑，隐藏中文副标题避免竖排挤压 */
+  @media (max-width:640px){
+    header{padding:10px 14px;gap:10px}
+    .logo{font-size:16px}
+    .logo small{display:none}
+  }
 </style>
 </head>
 <body>
