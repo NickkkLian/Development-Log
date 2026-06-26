@@ -298,16 +298,17 @@
 </head>
 <body>
 <header>
-  <div class="logo"><span class="blip"></span>DEVLOG<small>开发日志台账</small></div>
+  <div class="logo"><span class="blip"></span>DEVLOG<small data-i18n="logoSub">开发日志台账</small></div>
   <div class="spacer"></div>
-  <div id="syncStatus" class="sync idle"><span class="dot"></span><span class="txt">未配置</span></div>
-  <button class="btn icon ghost" id="pullBtn" title="从 GitHub 拉取">
+  <div id="syncStatus" class="sync idle"><span class="dot"></span><span class="txt" data-i18n="notConfigured">未配置</span></div>
+  <button class="btn icon ghost" id="langBtn" onclick="toggleLang()" title="中 / EN" style="font-family:var(--mono);font-size:12px">EN</button>
+  <button class="btn icon ghost" id="pullBtn" data-i18n-title="pullT" title="从 GitHub 拉取">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
   </button>
-  <button class="btn icon ghost" id="pushBtn" title="同步到 GitHub">
+  <button class="btn icon ghost" id="pushBtn" data-i18n-title="pushT" title="同步到 GitHub">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
   </button>
-  <button class="btn icon ghost" id="settingsBtn" title="设置">
+  <button class="btn icon ghost" id="settingsBtn" data-i18n-title="settingsT" title="设置">
     <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
   </button>
 </header>
@@ -318,40 +319,40 @@
   <div class="toolbar">
     <div class="search">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4"/></svg>
-      <input id="search" placeholder="搜索项目名称、描述、更新内容…" />
+      <input id="search" data-i18n-ph="searchPh" placeholder="搜索项目名称、描述、更新内容…" />
     </div>
     <select id="statusFilter">
-      <option value="">全部状态</option>
-      <option value="delivered">已完成并交付</option>
-      <option value="inuse">已完成且持续使用中</option>
-      <option value="wip">半成品</option>
-      <option value="idea">想法</option>
+      <option value="" data-i18n="sf_all">全部状态</option>
+      <option value="delivered" data-i18n="st_delivered">已完成并交付</option>
+      <option value="inuse" data-i18n="st_inuse">已完成且持续使用中</option>
+      <option value="wip" data-i18n="st_wip">半成品</option>
+      <option value="idea" data-i18n="st_idea">想法</option>
     </select>
     <select id="sortBy">
-      <option value="updated">按最近更新</option>
-      <option value="created">按创建时间</option>
-      <option value="name">按名称</option>
+      <option value="updated" data-i18n="sb_updated">按最近更新</option>
+      <option value="created" data-i18n="sb_created">按创建时间</option>
+      <option value="name" data-i18n="sb_name">按名称</option>
     </select>
     <button class="btn ghost" id="importBtn">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15V3M8 11l4 4 4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
-      导入归档
+      <span data-i18n="importBtn">导入归档</span>
     </button>
-    <button class="btn ghost" id="exportBtn" title="把勾选了「公开展示」的条目导出为 JSON">
+    <button class="btn ghost" id="exportBtn" data-i18n-title="exportBtnT" title="把勾选了「公开展示」的条目导出为 JSON">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12M8 7l4-4 4 4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
-      导出展示数据
+      <span data-i18n="exportBtn">导出展示数据</span>
     </button>
     <button class="btn primary" id="addBtn">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>
-      新建项目
+      <span data-i18n="addBtn">新建项目</span>
     </button>
   </div>
 
   <div class="chips" id="typeChips">
-    <button class="chip t-all" data-type="" data-active="1">全部</button>
-    <button class="chip t-commercial" data-type="commercial">商业项目</button>
-    <button class="chip t-volunteer" data-type="volunteer">志愿项目</button>
-    <button class="chip t-personal" data-type="personal">个人项目</button>
-    <button class="chip t-fun" data-type="fun">做着好玩</button>
+    <button class="chip t-all" data-type="" data-active="1" data-i18n="ch_all">全部</button>
+    <button class="chip t-commercial" data-type="commercial" data-i18n="ty_commercial">商业项目</button>
+    <button class="chip t-volunteer" data-type="volunteer" data-i18n="ty_volunteer">志愿项目</button>
+    <button class="chip t-personal" data-type="personal" data-i18n="ty_personal">个人项目</button>
+    <button class="chip t-fun" data-type="fun" data-i18n="ty_fun">做着好玩</button>
   </div>
 
   <div class="list" id="list"></div>
@@ -363,58 +364,58 @@
     <h3><span class="blip"></span><span id="projModalTitle">新建项目</span></h3>
     <div class="modal-body">
       <div class="field">
-        <label>项目名称 <span class="req">*</span></label>
-        <input id="f_name" placeholder="例如：个人作品集网站" />
+        <label><span data-i18n="fl_name">项目名称</span> <span class="req">*</span></label>
+        <input id="f_name" data-i18n-ph="ph_name" placeholder="例如：个人作品集网站" />
       </div>
       <div class="grid2">
         <div class="field">
-          <label>开发类型 <span class="req">*</span></label>
+          <label><span data-i18n="fl_type">开发类型</span> <span class="req">*</span></label>
           <select id="f_type">
-            <option value="commercial">商业项目</option>
-            <option value="volunteer">志愿项目</option>
-            <option value="personal">个人项目</option>
-            <option value="fun">做着好玩</option>
+            <option value="commercial" data-i18n="ty_commercial">商业项目</option>
+            <option value="volunteer" data-i18n="ty_volunteer">志愿项目</option>
+            <option value="personal" data-i18n="ty_personal">个人项目</option>
+            <option value="fun" data-i18n="ty_fun">做着好玩</option>
           </select>
         </div>
         <div class="field">
-          <label>状态 <span class="req">*</span></label>
+          <label><span data-i18n="fl_status">状态</span> <span class="req">*</span></label>
           <select id="f_status">
-            <option value="delivered">已完成并交付</option>
-            <option value="inuse">已完成且持续使用中</option>
-            <option value="wip">半成品</option>
-            <option value="idea">想法</option>
+            <option value="delivered" data-i18n="st_delivered">已完成并交付</option>
+            <option value="inuse" data-i18n="st_inuse">已完成且持续使用中</option>
+            <option value="wip" data-i18n="st_wip">半成品</option>
+            <option value="idea" data-i18n="st_idea">想法</option>
           </select>
         </div>
       </div>
       <div class="field">
-        <label>描述</label>
-        <textarea id="f_desc" placeholder="项目简介、用到的技术、背景等…"></textarea>
+        <label data-i18n="fl_desc">描述</label>
+        <textarea id="f_desc" data-i18n-ph="ph_desc" placeholder="项目简介、用到的技术、背景等…"></textarea>
       </div>
       <div class="field">
-        <label>最新版本功能介绍</label>
-        <textarea id="f_feat" placeholder="当前版本能做什么、面向用户的核心价值…（每次更新后修改这里）"></textarea>
-        <div class="hint">这是展示在卡片里的「当前版本能力」。展开项目后可一键复制更新 Prompt，让 AI 帮你重写。</div>
+        <label data-i18n="fl_feat">最新版本功能介绍</label>
+        <textarea id="f_feat" data-i18n-ph="ph_feat" placeholder="当前版本能做什么、面向用户的核心价值…（每次更新后修改这里）"></textarea>
+        <div class="hint" data-i18n="hint_feat">这是展示在卡片里的「当前版本能力」。展开项目后可一键复制更新 Prompt，让 AI 帮你重写。</div>
       </div>
       <div class="field">
-        <label>项目小结 / 备注</label>
-        <textarea id="f_notes" placeholder="开发过程的人类可读小结：里程碑、踩过的坑及解决办法等…"></textarea>
-        <div class="hint">归档 Prompt 的「人类可读小结」会放进这里。</div>
+        <label data-i18n="fl_notes">项目小结 / 备注</label>
+        <textarea id="f_notes" data-i18n-ph="ph_notes" placeholder="开发过程的人类可读小结：里程碑、踩过的坑及解决办法等…"></textarea>
+        <div class="hint" data-i18n="hint_notes">归档 Prompt 的「人类可读小结」会放进这里。</div>
       </div>
       <div class="grid2">
         <div class="field">
-          <label>仓库 / 源码链接</label>
+          <label data-i18n="fl_repo">仓库 / 源码链接</label>
           <input id="f_repo" placeholder="https://github.com/..." />
         </div>
         <div class="field">
-          <label>线上 / 演示链接</label>
+          <label data-i18n="fl_live">线上 / 演示链接</label>
           <input id="f_live" placeholder="https://..." />
         </div>
       </div>
-      <label class="check-row"><input type="checkbox" id="f_public"><span>对外公开展示（勾选后可被「导出展示数据」收录）</span></label>
+      <label class="check-row"><input type="checkbox" id="f_public"><span data-i18n="publicCheck">对外公开展示（勾选后可被「导出展示数据」收录）</span></label>
     </div>
     <div class="modal-foot">
-      <button class="btn ghost" data-close>取消</button>
-      <button class="btn primary" id="saveProj">保存</button>
+      <button class="btn ghost" data-close data-i18n="cancel">取消</button>
+      <button class="btn primary" id="saveProj" data-i18n="save">保存</button>
     </div>
   </div>
 </div>
@@ -422,29 +423,29 @@
 <!-- ===== Update Modal ===== -->
 <div class="overlay" id="updModal">
   <div class="modal">
-    <h3><span class="blip"></span>添加更新记录</h3>
+    <h3><span class="blip"></span><span data-i18n="updModalTitle">添加更新记录</span></h3>
     <div class="modal-body">
       <div class="grid2">
         <div class="field">
-          <label>日期</label>
+          <label data-i18n="fl_date">日期</label>
           <input type="date" id="u_date" />
         </div>
         <div class="field">
-          <label>更新类型</label>
+          <label data-i18n="fl_ukind">更新类型</label>
           <div class="radio-row">
-            <label><input type="radio" name="ukind" value="minor" checked><span>小版本</span></label>
-            <label><input type="radio" name="ukind" value="major"><span>大版本</span></label>
+            <label><input type="radio" name="ukind" value="minor" checked><span data-i18n="rk_minor">小版本</span></label>
+            <label><input type="radio" name="ukind" value="major"><span data-i18n="rk_major">大版本</span></label>
           </div>
         </div>
       </div>
       <div class="field">
-        <label>更新内容 <span class="req">*</span></label>
-        <textarea id="u_note" placeholder="这次更新做了什么…"></textarea>
+        <label><span data-i18n="fl_unote">更新内容</span> <span class="req">*</span></label>
+        <textarea id="u_note" data-i18n-ph="ph_unote" placeholder="这次更新做了什么…"></textarea>
       </div>
     </div>
     <div class="modal-foot">
-      <button class="btn ghost" data-close>取消</button>
-      <button class="btn primary" id="saveUpd">添加</button>
+      <button class="btn ghost" data-close data-i18n="cancel">取消</button>
+      <button class="btn primary" id="saveUpd" data-i18n="add">添加</button>
     </div>
   </div>
 </div>
@@ -452,12 +453,12 @@
 <!-- ===== Prompt Template Modal ===== -->
 <div class="overlay" id="promptModal">
   <div class="modal">
-    <h3><span class="blip"></span>编辑「更新 Prompt」模板</h3>
+    <h3><span class="blip"></span><span data-i18n="promptModalTitle">编辑「更新 Prompt」模板</span></h3>
     <div class="modal-body">
       <div class="field">
-        <label>模板内容</label>
+        <label data-i18n="fl_tpl">模板内容</label>
         <textarea id="p_tpl" style="min-height:240px;font-family:var(--mono);font-size:12.5px;line-height:1.6"></textarea>
-        <div class="hint">
+        <div class="hint" data-i18n-html="hint_tpl">
           可用占位符（复制时自动替换为该项目数据）：<br>
           <b>{name}</b> 项目名 · <b>{version}</b> 当前版本号 · <b>{type}</b> 类型 · <b>{status}</b> 状态<br>
           <b>{feature}</b> 当前功能介绍 · <b>{desc}</b> 描述 · <b>{updates}</b> 最近更新列表
@@ -465,9 +466,9 @@
       </div>
     </div>
     <div class="modal-foot">
-      <button class="btn ghost" data-close>取消</button>
-      <button class="btn danger ghost" id="resetTpl">恢复默认</button>
-      <button class="btn primary" id="saveTpl">保存模板</button>
+      <button class="btn ghost" data-close data-i18n="cancel">取消</button>
+      <button class="btn danger ghost" id="resetTpl" data-i18n="resetTpl">恢复默认</button>
+      <button class="btn primary" id="saveTpl" data-i18n="saveTpl">保存模板</button>
     </div>
   </div>
 </div>
@@ -475,18 +476,18 @@
 <!-- ===== Import Modal ===== -->
 <div class="overlay" id="importModal">
   <div class="modal">
-    <h3><span class="blip"></span>导入归档（粘贴 JSON）</h3>
+    <h3><span class="blip"></span><span data-i18n="importModalTitle">导入归档（粘贴 JSON）</span></h3>
     <div class="modal-body">
       <div class="field">
-        <label>粘贴某个窗口生成的 JSON</label>
-        <textarea id="imp_text" style="min-height:200px;font-family:var(--mono);font-size:12px;line-height:1.55" placeholder='支持单个项目对象、项目数组，或 {"projects":[...]}；可直接粘贴含 ```json 代码块的整段文本。'></textarea>
-        <div class="hint">同名项目会自动合并：更新介绍/描述/状态，并追加新的更新（重复的更新会跳过）。新名字则作为新项目加入。</div>
+        <label data-i18n="fl_imp">粘贴某个窗口生成的 JSON</label>
+        <textarea id="imp_text" data-i18n-ph="ph_imp" style="min-height:200px;font-family:var(--mono);font-size:12px;line-height:1.55" placeholder='支持单个项目对象、项目数组，或 {"projects":[...]}；可直接粘贴含 ```json 代码块的整段文本。'></textarea>
+        <div class="hint" data-i18n="hint_imp">同名项目会自动合并：更新介绍/描述/状态，并追加新的更新（重复的更新会跳过）。新名字则作为新项目加入。</div>
       </div>
       <div id="imp_report" class="warnbox" style="display:none;background:rgba(130,200,117,.07);border-color:rgba(130,200,117,.25);color:var(--ink)"></div>
     </div>
     <div class="modal-foot">
-      <button class="btn ghost" data-close>关闭</button>
-      <button class="btn primary" id="doImport">解析并导入</button>
+      <button class="btn ghost" data-close data-i18n="close">关闭</button>
+      <button class="btn primary" id="doImport" data-i18n="doImport">解析并导入</button>
     </div>
   </div>
 </div>
@@ -494,39 +495,39 @@
 <!-- ===== Settings Modal ===== -->
 <div class="overlay" id="setModal">
   <div class="modal">
-    <h3><span class="blip"></span>GitHub 同步设置</h3>
+    <h3><span class="blip"></span><span data-i18n="setModalTitle">GitHub 同步设置</span></h3>
     <div class="modal-body">
       <div class="field">
-        <label>GitHub 用户名 / 组织 (owner) <span class="req">*</span></label>
+        <label><span data-i18n="fl_owner">GitHub 用户名 / 组织 (owner)</span> <span class="req">*</span></label>
         <input id="s_owner" placeholder="your-username" />
       </div>
       <div class="field">
-        <label>私有仓库名 (private repo) <span class="req">*</span></label>
+        <label><span data-i18n="fl_repo2">私有仓库名 (private repo)</span> <span class="req">*</span></label>
         <input id="s_repo" placeholder="my-data" />
       </div>
       <div class="grid2">
         <div class="field">
-          <label>分支</label>
+          <label data-i18n="fl_branch">分支</label>
           <input id="s_branch" placeholder="main" />
         </div>
         <div class="field">
-          <label>数据文件路径</label>
+          <label data-i18n="fl_path">数据文件路径</label>
           <input id="s_path" value="develop.json" />
         </div>
       </div>
       <div class="field">
         <label>Fine-grained Token <span class="req">*</span></label>
         <input id="s_token" type="password" placeholder="github_pat_..." />
-        <div class="hint">权限要求：仅对该私有仓库授予 <b>Contents: Read and write</b>。建议设置较短有效期。</div>
+        <div class="hint" data-i18n-html="hint_token">权限要求：仅对该私有仓库授予 <b>Contents: Read and write</b>。建议设置较短有效期。</div>
       </div>
-      <div class="warnbox">
+      <div class="warnbox" data-i18n-html="warn_token">
         <b>安全提示：</b>Token 保存在本机浏览器 localStorage 中，任何能访问此设备/浏览器的人都可读取。请勿在公共电脑使用，且只给最小权限（单仓库 Contents 读写）。
       </div>
     </div>
     <div class="modal-foot">
-      <button class="btn ghost" data-close>取消</button>
-      <button class="btn danger ghost" id="clearToken">清除 Token</button>
-      <button class="btn primary" id="saveSettings">保存并连接</button>
+      <button class="btn ghost" data-close data-i18n="cancel">取消</button>
+      <button class="btn danger ghost" id="clearToken" data-i18n="clearToken">清除 Token</button>
+      <button class="btn primary" id="saveSettings" data-i18n="saveConnect">保存并连接</button>
     </div>
   </div>
 </div>
@@ -559,6 +560,110 @@ let editingProjId = null;
 
 const TYPE_LABEL = { commercial:'商业项目', volunteer:'志愿项目', personal:'个人项目', fun:'做着好玩' };
 const STATUS_LABEL = { delivered:'已完成并交付', inuse:'已完成且持续使用中', wip:'半成品', idea:'想法' };
+
+/* =========================================================
+   双语 i18n（全站共享 pha-lang，默认 zh）
+   ========================================================= */
+let lang = (() => { try { return localStorage.getItem('pha-lang') === 'en' ? 'en' : 'zh'; } catch { return 'zh'; } })();
+const T = (zh, en) => lang === 'en' ? en : zh;
+// 显示辅助：p.type / p.status / u.kind 都是存储键；TYPE_LABEL/STATUS_LABEL 中文版仍供 prompt+export 用
+const TYPE_LABEL_EN = { commercial:'Commercial', volunteer:'Volunteer', personal:'Personal', fun:'For Fun' };
+const STATUS_LABEL_EN = { delivered:'Delivered', inuse:'In use', wip:'WIP', idea:'Idea' };
+const typeLabel = t => lang === 'en' ? (TYPE_LABEL_EN[t] || t) : (TYPE_LABEL[t] || t);
+const statusLabel = s => lang === 'en' ? (STATUS_LABEL_EN[s] || s) : (STATUS_LABEL[s] || s);
+const kindLabel = k => k === 'major' ? T('大版本','Major') : T('小版本','Minor');
+const I18N = {
+  logoSub:{zh:'开发日志台账',en:'Development Log'},
+  pullT:{zh:'从 GitHub 拉取',en:'Pull from GitHub'},
+  pushT:{zh:'同步到 GitHub',en:'Sync to GitHub'},
+  settingsT:{zh:'设置',en:'Settings'},
+  searchPh:{zh:'搜索项目名称、描述、更新内容…',en:'Search project name, description, updates…'},
+  sf_all:{zh:'全部状态',en:'All statuses'},
+  st_delivered:{zh:'已完成并交付',en:'Delivered'},
+  st_inuse:{zh:'已完成且持续使用中',en:'Done & in use'},
+  st_wip:{zh:'半成品',en:'WIP'},
+  st_idea:{zh:'想法',en:'Idea'},
+  sb_updated:{zh:'按最近更新',en:'By last update'},
+  sb_created:{zh:'按创建时间',en:'By created'},
+  sb_name:{zh:'按名称',en:'By name'},
+  importBtn:{zh:'导入归档',en:'Import'},
+  exportBtn:{zh:'导出展示数据',en:'Export public'},
+  exportBtnT:{zh:'把勾选了「公开展示」的条目导出为 JSON',en:'Export items marked public as JSON'},
+  addBtn:{zh:'新建项目',en:'New project'},
+  ch_all:{zh:'全部',en:'All'},
+  ty_commercial:{zh:'商业项目',en:'Commercial'},
+  ty_volunteer:{zh:'志愿项目',en:'Volunteer'},
+  ty_personal:{zh:'个人项目',en:'Personal'},
+  ty_fun:{zh:'做着好玩',en:'For Fun'},
+  // project modal
+  fl_name:{zh:'项目名称',en:'Project name'},
+  ph_name:{zh:'例如：个人作品集网站',en:'e.g. Personal portfolio site'},
+  fl_type:{zh:'开发类型',en:'Type'},
+  fl_status:{zh:'状态',en:'Status'},
+  fl_desc:{zh:'描述',en:'Description'},
+  ph_desc:{zh:'项目简介、用到的技术、背景等…',en:'Summary, tech stack, background…'},
+  fl_feat:{zh:'最新版本功能介绍',en:'Current feature intro'},
+  ph_feat:{zh:'当前版本能做什么、面向用户的核心价值…（每次更新后修改这里）',en:'What the current version does, core value for users… (update after each release)'},
+  hint_feat:{zh:'这是展示在卡片里的「当前版本能力」。展开项目后可一键复制更新 Prompt，让 AI 帮你重写。',en:'This is the “current capability” shown on the card. Expand a project to copy an update prompt and let AI rewrite it.'},
+  fl_notes:{zh:'项目小结 / 备注',en:'Project notes / recap'},
+  ph_notes:{zh:'开发过程的人类可读小结：里程碑、踩过的坑及解决办法等…',en:'Human-readable recap: milestones, pitfalls and fixes…'},
+  hint_notes:{zh:'归档 Prompt 的「人类可读小结」会放进这里。',en:'The archive prompt’s “human-readable recap” goes here.'},
+  fl_repo:{zh:'仓库 / 源码链接',en:'Repo / source link'},
+  fl_live:{zh:'线上 / 演示链接',en:'Live / demo link'},
+  publicCheck:{zh:'对外公开展示（勾选后可被「导出展示数据」收录）',en:'Public showcase (included when you “Export public”)'},
+  cancel:{zh:'取消',en:'Cancel'},
+  save:{zh:'保存',en:'Save'},
+  // update modal
+  updModalTitle:{zh:'添加更新记录',en:'Add update'},
+  fl_date:{zh:'日期',en:'Date'},
+  fl_ukind:{zh:'更新类型',en:'Update type'},
+  rk_minor:{zh:'小版本',en:'Minor'},
+  rk_major:{zh:'大版本',en:'Major'},
+  fl_unote:{zh:'更新内容',en:'What changed'},
+  ph_unote:{zh:'这次更新做了什么…',en:'What this update did…'},
+  add:{zh:'添加',en:'Add'},
+  // prompt modal
+  promptModalTitle:{zh:'编辑「更新 Prompt」模板',en:'Edit “Update Prompt” template'},
+  fl_tpl:{zh:'模板内容',en:'Template'},
+  hint_tpl:{zh:'可用占位符（复制时自动替换为该项目数据）：<br><b>{name}</b> 项目名 · <b>{version}</b> 当前版本号 · <b>{type}</b> 类型 · <b>{status}</b> 状态<br><b>{feature}</b> 当前功能介绍 · <b>{desc}</b> 描述 · <b>{updates}</b> 最近更新列表',en:'Placeholders (auto-filled with the project’s data on copy):<br><b>{name}</b> name · <b>{version}</b> current version · <b>{type}</b> type · <b>{status}</b> status<br><b>{feature}</b> feature intro · <b>{desc}</b> description · <b>{updates}</b> recent updates'},
+  ph_imp:{zh:'支持单个项目对象、项目数组，或 {"projects":[...]}；可直接粘贴含 ```json 代码块的整段文本。',en:'Accepts a single project object, an array, or {"projects":[...]}; you can paste whole text including a ```json code block.'},
+  resetTpl:{zh:'恢复默认',en:'Reset'},
+  saveTpl:{zh:'保存模板',en:'Save template'},
+  // import modal
+  importModalTitle:{zh:'导入归档（粘贴 JSON）',en:'Import archive (paste JSON)'},
+  fl_imp:{zh:'粘贴某个窗口生成的 JSON',en:'Paste JSON generated elsewhere'},
+  hint_imp:{zh:'同名项目会自动合并：更新介绍/描述/状态，并追加新的更新（重复的更新会跳过）。新名字则作为新项目加入。',en:'Same-named projects merge: feature/description/status update and new updates append (duplicates skipped). New names are added as new projects.'},
+  close:{zh:'关闭',en:'Close'},
+  doImport:{zh:'解析并导入',en:'Parse & import'},
+  // settings modal
+  setModalTitle:{zh:'GitHub 同步设置',en:'GitHub Sync Settings'},
+  fl_owner:{zh:'GitHub 用户名 / 组织 (owner)',en:'GitHub user / org (owner)'},
+  fl_repo2:{zh:'私有仓库名 (private repo)',en:'Private repo name'},
+  fl_branch:{zh:'分支',en:'Branch'},
+  fl_path:{zh:'数据文件路径',en:'Data file path'},
+  hint_token:{zh:'权限要求：仅对该私有仓库授予 <b>Contents: Read and write</b>。建议设置较短有效期。',en:'Permission: grant only <b>Contents: Read and write</b> on that private repo. A short expiry is recommended.'},
+  warn_token:{zh:'<b>安全提示：</b>Token 保存在本机浏览器 localStorage 中，任何能访问此设备/浏览器的人都可读取。请勿在公共电脑使用，且只给最小权限（单仓库 Contents 读写）。',en:'<b>Security note:</b> the token is stored in this browser’s localStorage and readable by anyone with access to this device/browser. Don’t use it on public computers, and grant minimum permissions (single-repo Contents read/write).'},
+  clearToken:{zh:'清除 Token',en:'Clear token'},
+  saveConnect:{zh:'保存并连接',en:'Save & connect'},
+  langBtn:{zh:'EN',en:'中'},
+  notConfigured:{zh:'未配置',en:'Not configured'},
+};
+const Ls = k => (I18N[k] || {zh:k,en:k})[lang];
+function applyStatic(){
+  document.documentElement.lang = lang === 'en' ? 'en' : 'zh-CN';
+  document.title = lang === 'en' ? 'DEVLOG · Development Log' : 'DEVLOG · 开发日志台账';
+  document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = Ls(el.dataset.i18n); });
+  document.querySelectorAll('[data-i18n-html]').forEach(el => { el.innerHTML = Ls(el.dataset.i18nHtml); });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => { el.placeholder = Ls(el.dataset.i18nPh); });
+  document.querySelectorAll('[data-i18n-title]').forEach(el => { el.title = Ls(el.dataset.i18nTitle); });
+  const lb = document.getElementById('langBtn'); if (lb) lb.textContent = Ls('langBtn');
+}
+function toggleLang(){
+  lang = lang === 'en' ? 'zh' : 'en';
+  try { localStorage.setItem('pha-lang', lang); } catch {}
+  applyStatic();
+  render();
+}
 
 // 本数据库唯一标识（dbId）：用于导出顶层字段、跨库去重与导出文件名，全小写无空格，请固定不变。
 const DB_ID = 'develop';
@@ -632,15 +737,15 @@ function ghHeaders(){
 function configured(){ return config.owner && config.repo && config.token; }
 
 async function ghPull(){
-  if(!configured()){ setSync('idle','未配置'); return; }
-  setSync('busy','拉取中…');
+  if(!configured()){ setSync('idle',T('未配置','Not configured')); return; }
+  setSync('busy',T('拉取中…','Pulling…'));
   try{
     const url = apiBase() + '?ref=' + encodeURIComponent(config.branch||'main') + '&t=' + Date.now();
     const res = await fetch(url, { headers: ghHeaders(), cache:'no-store' });
     if(res.status === 404){
       // 文件还不存在：视为空，等首次推送创建
       fileSha = null; data = { meta:{version:1,updatedAt:null}, projects:[] };
-      cacheLocal(); render(); setSync('ok','已连接 · 文件待创建'); toast('已连接，develop.json 尚不存在，保存后将自动创建');
+      cacheLocal(); render(); setSync('ok',T('已连接 · 文件待创建','Connected · file pending')); toast(T('已连接，develop.json 尚不存在，保存后将自动创建','Connected. develop.json doesn’t exist yet; it’ll be created on save'));
       return;
     }
     if(!res.ok) throw new Error(await errMsg(res));
@@ -649,16 +754,16 @@ async function ghPull(){
     const text = b64ToUtf8(json.content);
     const parsed = JSON.parse(text);
     data = normalize(parsed);
-    cacheLocal(); render(); setSync('ok','已同步');
-    toast('已从 GitHub 拉取最新数据');
+    cacheLocal(); render(); setSync('ok',T('已同步','Synced'));
+    toast(T('已从 GitHub 拉取最新数据','Pulled latest data from GitHub'));
   }catch(e){
-    setSync('err','拉取失败'); toast('拉取失败：'+e.message, true);
+    setSync('err',T('拉取失败','Pull failed')); toast(T('拉取失败：','Pull failed: ')+e.message, true);
   }
 }
 
 async function ghPush(silent){
-  if(!configured()){ setSync('idle','未配置'); if(!silent) toast('请先在设置中配置 GitHub', true); return; }
-  setSync('busy','同步中…');
+  if(!configured()){ setSync('idle',T('未配置','Not configured')); if(!silent) toast(T('请先在设置中配置 GitHub','Configure GitHub in settings first'), true); return; }
+  setSync('busy',T('同步中…','Syncing…'));
   data.meta = data.meta || {}; data.meta.updatedAt = new Date().toISOString(); data.meta.version = 1;
   try{
     const body = {
@@ -678,25 +783,25 @@ async function ghPush(silent){
     if(!res.ok) throw new Error(await errMsg(res));
     const json = await res.json();
     fileSha = json.content.sha;
-    cacheLocal(); setSync('ok','已同步'); if(!silent) toast('已同步到 GitHub');
+    cacheLocal(); setSync('ok',T('已同步','Synced')); if(!silent) toast(T('已同步到 GitHub','Synced to GitHub'));
   }catch(e){
-    setSync('err','同步失败'); toast('同步失败：'+e.message, true);
+    setSync('err',T('同步失败','Sync failed')); toast(T('同步失败：','Sync failed: ')+e.message, true);
   }
 }
 
 async function errMsg(res){
   let m = res.status + ' ' + res.statusText;
   try{ const j = await res.json(); if(j.message) m = j.message; }catch(e){}
-  if(res.status===401) m='Token 无效或已过期';
-  if(res.status===403) m='权限不足（需 Contents 读写）或触发限流';
-  if(res.status===404 && m.includes('Not Found')) m='仓库或路径不存在，请检查 owner/repo/分支';
+  if(res.status===401) m=T('Token 无效或已过期','Token invalid or expired');
+  if(res.status===403) m=T('权限不足（需 Contents 读写）或触发限流','Insufficient permission (needs Contents read/write) or rate-limited');
+  if(res.status===404 && m.includes('Not Found')) m=T('仓库或路径不存在，请检查 owner/repo/分支','Repo or path not found — check owner/repo/branch');
   return m;
 }
 
 function scheduleSync(){
   cacheLocal();
-  if(!configured()){ setSync('idle','未配置（本地）'); return; }
-  setSync('dirty','待同步…');
+  if(!configured()){ setSync('idle',T('未配置（本地）','Not configured (local)')); return; }
+  setSync('dirty',T('待同步…','Pending sync…'));
   clearTimeout(saveTimer);
   saveTimer = setTimeout(()=> ghPush(true), 1500);
 }
@@ -787,11 +892,11 @@ function renderStats(){
   const ps = data.projects;
   const by = k => ps.filter(p=>p.status===k).length;
   const items = [
-    { n: ps.length, l:'项目总数' },
-    { n: by('delivered')+by('inuse'), l:'已完成', c:'var(--ok)' },
-    { n: by('wip'), l:'半成品', c:'var(--warn)' },
-    { n: by('idea'), l:'想法', c:'var(--ink-faint)' },
-    { n: ps.reduce((a,p)=>a+(p.updates?p.updates.length:0),0), l:'更新记录' },
+    { n: ps.length, l:T('项目总数','Projects') },
+    { n: by('delivered')+by('inuse'), l:T('已完成','Done'), c:'var(--ok)' },
+    { n: by('wip'), l:T('半成品','WIP'), c:'var(--warn)' },
+    { n: by('idea'), l:T('想法','Ideas'), c:'var(--ink-faint)' },
+    { n: ps.reduce((a,p)=>a+(p.updates?p.updates.length:0),0), l:T('更新记录','Updates') },
   ];
   $('#stats').innerHTML = items.map(i=>`
     <div class="stat"><div class="bar" style="background:${i.c||'var(--accent)'}"></div>
@@ -815,11 +920,11 @@ function renderList(){
 
   const list = $('#list');
   if(!data.projects.length){
-    list.innerHTML = `<div class="empty"><div class="big">// 暂无记录</div><div>点击右上「新建项目」开始记录你的第一个开发日志</div></div>`;
+    list.innerHTML = `<div class="empty"><div class="big">${T('// 暂无记录','// No records')}</div><div>${T('点击右上「新建项目」开始记录你的第一个开发日志','Click “New project” at top-right to log your first project')}</div></div>`;
     return;
   }
   if(!ps.length){
-    list.innerHTML = `<div class="empty"><div class="big">// 无匹配结果</div><div>试试调整筛选条件或搜索词</div></div>`;
+    list.innerHTML = `<div class="empty"><div class="big">${T('// 无匹配结果','// No matches')}</div><div>${T('试试调整筛选条件或搜索词','Try adjusting the filters or search term')}</div></div>`;
     return;
   }
 
@@ -832,18 +937,18 @@ function renderList(){
         <span class="tl-dot"></span>
         <div class="tl-top">
           <span class="tl-date">${esc(u.date||'')}</span>
-          <span class="vbadge ${u.kind}">${u.kind==='major'?'大版本':'小版本'}</span>
+          <span class="vbadge ${u.kind}">${kindLabel(u.kind)}</span>
           <span class="tl-ver">v${verMap[u.id]||'0.0'}</span>
-          <button class="iconbtn del tl-del" data-act="delupd" data-pid="${p.id}" data-uid="${u.id}" title="删除此更新">
+          <button class="iconbtn del tl-del" data-act="delupd" data-pid="${p.id}" data-uid="${u.id}" title="${T('删除此更新','Delete this update')}">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
           </button>
         </div>
         <div class="tl-note">${esc(u.note||'')}</div>
-      </li>`).join('') : `<div style="color:var(--ink-faint);font-size:13px;padding:2px 0 12px;font-family:var(--mono)">// 还没有更新记录</div>`;
+      </li>`).join('') : `<div style="color:var(--ink-faint);font-size:13px;padding:2px 0 12px;font-family:var(--mono)">${T('// 还没有更新记录','// No updates yet')}</div>`;
 
     const links = [];
-    if(p.repoUrl) links.push(`<a href="${esc(p.repoUrl)}" target="_blank" rel="noopener">源码 ↗</a>`);
-    if(p.liveUrl) links.push(`<a href="${esc(p.liveUrl)}" target="_blank" rel="noopener">演示 ↗</a>`);
+    if(p.repoUrl) links.push(`<a href="${esc(p.repoUrl)}" target="_blank" rel="noopener">${T('源码','Source')} ↗</a>`);
+    if(p.liveUrl) links.push(`<a href="${esc(p.liveUrl)}" target="_blank" rel="noopener">${T('演示','Demo')} ↗</a>`);
 
     return `
     <div class="card" data-id="${p.id}">
@@ -852,28 +957,28 @@ function renderList(){
         <div class="card-body">
           <div class="card-title">
             <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
-            ${esc(p.name||'(未命名)')}
-            <span class="tag type-${p.type}">${TYPE_LABEL[p.type]||p.type}</span>
-            <span class="status ${p.status}"><span class="sd"></span>${STATUS_LABEL[p.status]||p.status}</span>
+            ${esc(p.name||T('(未命名)','(Untitled)'))}
+            <span class="tag type-${p.type}">${typeLabel(p.type)}</span>
+            <span class="status ${p.status}"><span class="sd"></span>${statusLabel(p.status)}</span>
           </div>
           ${p.desc?`<div class="card-desc">${esc(p.desc)}</div>`:''}
           <div class="meta-row">
             <span class="vtag">v${ver}</span>
-            ${p.public?`<span class="pub-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>公开</span>`:''}
-            <span>更新 ${ (p.updates||[]).length } 次</span>
-            ${lastUpdateTime(p)?`<span>最近 ${esc(lastUpdateTime(p))}</span>`:''}
-            ${p.createdAt?`<span>建于 ${esc(p.createdAt)}</span>`:''}
+            ${p.public?`<span class="pub-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>${T('公开','Public')}</span>`:''}
+            <span>${T('更新','Updated')} ${ (p.updates||[]).length } ${T('次','×')}</span>
+            ${lastUpdateTime(p)?`<span>${T('最近','Last')} ${esc(lastUpdateTime(p))}</span>`:''}
+            ${p.createdAt?`<span>${T('建于','Created')} ${esc(p.createdAt)}</span>`:''}
             ${links.join('')}
           </div>
         </div>
         <div class="card-actions">
-          <button class="iconbtn pub" data-on="${p.public?1:0}" data-act="togglepublic" data-id="${p.id}" title="${p.public?'已公开展示，点击取消':'设为公开展示'}">
+          <button class="iconbtn pub" data-on="${p.public?1:0}" data-act="togglepublic" data-id="${p.id}" title="${p.public?T('已公开展示，点击取消','Public — click to unset'):T('设为公开展示','Make public')}">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
           </button>
-          <button class="iconbtn" data-act="edit" data-id="${p.id}" title="编辑">
+          <button class="iconbtn" data-act="edit" data-id="${p.id}" title="${T('编辑','Edit')}">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
           </button>
-          <button class="iconbtn del" data-act="delete" data-id="${p.id}" title="删除">
+          <button class="iconbtn del" data-act="delete" data-id="${p.id}" title="${T('删除','Delete')}">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
           </button>
         </div>
@@ -883,37 +988,37 @@ function renderList(){
           <div class="feat-head">
             <h4>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3 2.4 6.6L21 12l-6.6 2.4L12 21l-2.4-6.6L3 12l6.6-2.4z"/></svg>
-              最新版本功能介绍
+              ${T('最新版本功能介绍','Current feature intro')}
             </h4>
             <span class="vtag">v${ver}</span>
-            ${lastUpdateTime(p)?`<span class="ver">${ups[0] && ups[0].kind==='major'?'大版本':'小版本'} · ${esc(lastUpdateTime(p))}</span>`:''}
+            ${lastUpdateTime(p)?`<span class="ver">${ups[0] && ups[0].kind==='major'?T('大版本','Major'):T('小版本','Minor')} · ${esc(lastUpdateTime(p))}</span>`:''}
           </div>
-          <div class="feat-body ${p.featureIntro?'':'empty'}">${p.featureIntro?esc(p.featureIntro):'// 还没有功能介绍。点编辑项目填写，或用下方 Prompt 让 AI 生成。'}</div>
+          <div class="feat-body ${p.featureIntro?'':'empty'}">${p.featureIntro?esc(p.featureIntro):T('// 还没有功能介绍。点编辑项目填写，或用下方 Prompt 让 AI 生成。','// No feature intro yet. Edit the project to add one, or use the prompt below to have AI generate it.')}</div>
           <div class="feat-tools">
-            <button class="minibtn" data-act="copyprompt" data-id="${p.id}" title="复制可直接喂给 AI 的更新 Prompt">
+            <button class="minibtn" data-act="copyprompt" data-id="${p.id}" title="${T('复制可直接喂给 AI 的更新 Prompt','Copy the update prompt to feed to AI')}">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
-              复制更新 Prompt
+              ${T('复制更新 Prompt','Copy update prompt')}
             </button>
-            <button class="minibtn" data-act="edit" data-id="${p.id}" title="编辑功能介绍">
+            <button class="minibtn" data-act="edit" data-id="${p.id}" title="${T('编辑功能介绍','Edit feature intro')}">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
-              编辑介绍
+              ${T('编辑介绍','Edit intro')}
             </button>
-            <button class="minibtn" data-act="edittpl" title="编辑 Prompt 模板（全局通用）">
+            <button class="minibtn" data-act="edittpl" title="${T('编辑 Prompt 模板（全局通用）','Edit the prompt template (global)')}">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"/></svg>
-              模板
+              ${T('模板','Template')}
             </button>
           </div>
           <details class="prompt-view">
-            <summary>预览将复制的 Prompt</summary>
+            <summary>${T('预览将复制的 Prompt','Preview the prompt to copy')}</summary>
             <div class="prompt-pre">${esc(buildPrompt(p))}</div>
           </details>
         </div>
-        <div class="upd-head"><h4>更新历史</h4></div>
+        <div class="upd-head"><h4>${T('更新历史','Update history')}</h4></div>
         <button class="btn ghost add-upd" data-act="addupd" data-id="${p.id}">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg> 添加更新
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg> ${T('添加更新','Add update')}
         </button>
         <ul class="timeline">${upHtml}</ul>
-        ${p.notes?`<div class="notes-block"><h4>项目小结 / 备注</h4><div class="notes-body">${esc(p.notes)}</div></div>`:''}
+        ${p.notes?`<div class="notes-block"><h4>${T('项目小结 / 备注','Project notes / recap')}</h4><div class="notes-body">${esc(p.notes)}</div></div>`:''}
       </div>
     </div>`;
   }).join('');
@@ -945,18 +1050,18 @@ function togglePublic(id){
   render();
   if(wasOpen){ const c=document.querySelector(`.card[data-id="${id}"]`); if(c) c.classList.add('open'); }
   scheduleSync();
-  toast(p.public?'已设为公开展示':'已取消公开展示');
+  toast(p.public?T('已设为公开展示','Set to public'):T('已取消公开展示','Unset public'));
 }
 
 async function copyPromptFor(btn){
   const p = data.projects.find(x=>x.id===btn.dataset.id); if(!p) return;
   const ok = await copyText(buildPrompt(p));
   if(ok){
-    const old = btn.innerHTML; btn.classList.add('ok'); btn.innerHTML = '✓ 已复制';
-    toast('更新 Prompt 已复制，粘贴到 AI 即可');
+    const old = btn.innerHTML; btn.classList.add('ok'); btn.innerHTML = T('✓ 已复制','✓ Copied');
+    toast(T('更新 Prompt 已复制，粘贴到 AI 即可','Update prompt copied — paste it into AI'));
     setTimeout(()=>{ btn.classList.remove('ok'); btn.innerHTML = old; }, 1600);
   }else{
-    toast('复制失败，请展开预览手动复制', true);
+    toast(T('复制失败，请展开预览手动复制','Copy failed — expand the preview to copy manually'), true);
   }
 }
 
@@ -975,7 +1080,7 @@ $('#addBtn').addEventListener('click', ()=>openProjModal(null));
 function openProjModal(id){
   editingProjId = id;
   const p = id ? data.projects.find(x=>x.id===id) : null;
-  $('#projModalTitle').textContent = p ? '编辑项目' : '新建项目';
+  $('#projModalTitle').textContent = p ? T('编辑项目','Edit project') : T('新建项目','New project');
   $('#f_name').value = p?.name||'';
   $('#f_type').value = p?.type||'personal';
   $('#f_status').value = p?.status||'idea';
@@ -989,7 +1094,7 @@ function openProjModal(id){
 }
 $('#saveProj').addEventListener('click', ()=>{
   const name = $('#f_name').value.trim();
-  if(!name){ toast('请填写项目名称', true); return; }
+  if(!name){ toast(T('请填写项目名称','Enter a project name'), true); return; }
   const payload = {
     name,
     type: $('#f_type').value,
@@ -1015,7 +1120,7 @@ $('#saveProj').addEventListener('click', ()=>{
 
 function deleteProj(id){
   const p = data.projects.find(x=>x.id===id);
-  if(!confirm(`确认删除项目「${p?.name||''}」及其全部更新记录？`)) return;
+  if(!confirm(T(`确认删除项目「${p?.name||''}」及其全部更新记录？`,`Delete project “${p?.name||''}” and all its updates?`))) return;
   data.projects = data.projects.filter(x=>x.id!==id);
   render(); scheduleSync();
 }
@@ -1030,7 +1135,7 @@ function openUpdModal(pid){
 }
 $('#saveUpd').addEventListener('click', ()=>{
   const note = $('#u_note').value.trim();
-  if(!note){ toast('请填写更新内容', true); return; }
+  if(!note){ toast(T('请填写更新内容','Enter the update content'), true); return; }
   const p = data.projects.find(x=>x.id===activeProjId);
   if(!p) return;
   p.updates.push({ id:uid(), date: $('#u_date').value||today(), kind: document.querySelector('input[name=ukind]:checked').value, note });
@@ -1063,11 +1168,11 @@ $('#saveSettings').addEventListener('click', async ()=>{
   };
   store.set(CFG_KEY, JSON.stringify(config));
   hideModal('#setModal');
-  if(configured()){ await ghPull(); } else { setSync('idle','未配置'); }
+  if(configured()){ await ghPull(); } else { setSync('idle',T('未配置','Not configured')); }
 });
 $('#clearToken').addEventListener('click', ()=>{
   config.token=''; store.set(CFG_KEY, JSON.stringify(config)); $('#s_token').value='';
-  setSync('idle','未配置'); toast('Token 已清除');
+  setSync('idle',T('未配置','Not configured')); toast(T('Token 已清除','Token cleared'));
 });
 $('#pullBtn').addEventListener('click', ()=>ghPull());
 $('#pushBtn').addEventListener('click', ()=>ghPush(false));
@@ -1081,7 +1186,7 @@ $('#saveTpl').addEventListener('click', ()=>{
   data.meta = data.meta || {};
   data.meta.updatePrompt = $('#p_tpl').value.trim() || DEFAULT_PROMPT;
   hideModal('#promptModal'); render(); scheduleSync();
-  toast('Prompt 模板已保存');
+  toast(T('Prompt 模板已保存','Prompt template saved'));
 });
 $('#resetTpl').addEventListener('click', ()=>{ $('#p_tpl').value = DEFAULT_PROMPT; });
 
@@ -1108,7 +1213,7 @@ function mergeImport(incoming){
   if(Array.isArray(incoming)) arr = incoming;
   else if(incoming && Array.isArray(incoming.projects)) arr = incoming.projects;
   else if(incoming && incoming.name) arr = [incoming];
-  else return { error:'未识别的结构，需要项目对象、项目数组，或 {projects:[...]}' };
+  else return { error:T('未识别的结构，需要项目对象、项目数组，或 {projects:[...]}','Unrecognized structure — expected a project object, an array, or {projects:[...]}') };
 
   const report = { added:[], merged:[], updates:0 };
   arr.forEach(src=>{
@@ -1148,18 +1253,18 @@ function mergeImport(incoming){
 $('#doImport').addEventListener('click', ()=>{
   const parsed = extractJSON($('#imp_text').value);
   const box = $('#imp_report');
-  if(parsed===undefined){ box.style.display='block'; box.style.background='rgba(232,103,95,.07)'; box.style.borderColor='rgba(232,103,95,.25)'; box.innerHTML='<b>解析失败：</b>没找到有效的 JSON。请确认粘贴了完整的 { … } 或 [ … ]。'; return; }
+  if(parsed===undefined){ box.style.display='block'; box.style.background='rgba(232,103,95,.07)'; box.style.borderColor='rgba(232,103,95,.25)'; box.innerHTML=T('<b>解析失败：</b>没找到有效的 JSON。请确认粘贴了完整的 { … } 或 [ … ]。','<b>Parse failed:</b> no valid JSON found. Make sure you pasted a complete { … } or [ … ].'); return; }
   const res = mergeImport(parsed);
-  if(res.error){ box.style.display='block'; box.style.background='rgba(232,103,95,.07)'; box.style.borderColor='rgba(232,103,95,.25)'; box.innerHTML='<b>导入失败：</b>'+esc(res.error); return; }
+  if(res.error){ box.style.display='block'; box.style.background='rgba(232,103,95,.07)'; box.style.borderColor='rgba(232,103,95,.25)'; box.innerHTML=T('<b>导入失败：</b>','<b>Import failed:</b> ')+esc(res.error); return; }
   render(); scheduleSync();
   const r=res.report;
   const lines=[];
-  r.added.forEach(x=>lines.push(`＋ 新增「${esc(x.name)}」（${x.n} 条更新）`));
-  r.merged.forEach(x=>lines.push(`↻ 合并「${esc(x.name)}」（追加 ${x.n} 条更新）`));
-  if(!lines.length) lines.push('没有可导入的项目（缺少 name 字段？）');
+  r.added.forEach(x=>lines.push(T(`＋ 新增「${esc(x.name)}」（${x.n} 条更新）`,`＋ Added “${esc(x.name)}” (${x.n} updates)`)));
+  r.merged.forEach(x=>lines.push(T(`↻ 合并「${esc(x.name)}」（追加 ${x.n} 条更新）`,`↻ Merged “${esc(x.name)}” (+${x.n} updates)`)));
+  if(!lines.length) lines.push(T('没有可导入的项目（缺少 name 字段？）','Nothing to import (missing name field?)'));
   box.style.display='block'; box.style.background='rgba(130,200,117,.07)'; box.style.borderColor='rgba(130,200,117,.25)';
-  box.innerHTML = lines.join('<br>') + `<br><br>共写入 ${r.updates} 条更新，已开始同步。`;
-  toast('导入完成');
+  box.innerHTML = lines.join('<br>') + T(`<br><br>共写入 ${r.updates} 条更新，已开始同步。`,`<br><br>Wrote ${r.updates} updates; syncing started.`);
+  toast(T('导入完成','Import complete'));
 });
 
 // ---- 导出公开展示数据 ----
@@ -1185,7 +1290,7 @@ function buildExportData(){
 }
 $('#exportBtn').addEventListener('click', ()=>{
   const count = data.projects.filter(p=>p.public).length;
-  if(!count){ toast('还没有勾选「公开展示」的条目', true); return; }
+  if(!count){ toast(T('还没有勾选「公开展示」的条目','No items marked public yet'), true); return; }
   publishPublic(`${DB_ID}.public.json`, JSON.stringify(buildExportData(), null, 2), count);
 });
 
@@ -1194,7 +1299,7 @@ $('#exportBtn').addEventListener('click', ()=>{
 async function publishPublic(filename, json, count){
   if(configured()){
     try{
-      setSync('busy','发布公开数据…');
+      setSync('busy',T('发布公开数据…','Publishing…'));
       const PUBLIC_REPO = 'Database-Public'; // 公开数据专用仓库（public）——网站只从这里读取，碰不到私有库
       const url = `https://api.github.com/repos/${config.owner}/${PUBLIC_REPO}/contents/${encodeURIComponent(filename)}`;
       const head = await fetch(url+'?t='+Date.now(), {headers:ghHeaders(),cache:'no-store'});
@@ -1203,12 +1308,12 @@ async function publishPublic(filename, json, count){
       if(sha) body.sha = sha;
       const res = await fetch(url, { method:'PUT', headers:{...ghHeaders(),'Content-Type':'application/json'}, body: JSON.stringify(body) });
       if(!res.ok) throw new Error(await errMsg(res));
-      setSync('ok','已同步');
-      toast(`已发布 ${count} 个公开条目 → ${filename}`);
+      setSync('ok',T('已同步','Synced'));
+      toast(T(`已发布 ${count} 个公开条目 → ${filename}`,`Published ${count} public items → ${filename}`));
       return;
     }catch(e){
-      setSync('err','发布失败');
-      toast('发布失败：'+e.message+'，已转为本地下载', true);
+      setSync('err',T('发布失败','Publish failed'));
+      toast(T('发布失败：','Publish failed: ')+e.message+T('，已转为本地下载',', fell back to local download'), true);
     }
   }
   const blob = new Blob([json], {type:'application/json'});
@@ -1217,7 +1322,7 @@ async function publishPublic(filename, json, count){
   a.href = url; a.download = filename;
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   setTimeout(()=>URL.revokeObjectURL(url), 1000);
-  toast(`已导出 ${count} 个公开条目（本地下载）`);
+  toast(T(`已导出 ${count} 个公开条目（本地下载）`,`Exported ${count} public items (local download)`));
 }
 
 // ---- modal 公共 ----
@@ -1237,9 +1342,10 @@ document.addEventListener('keydown', e=>{ if(e.key==='Escape') $$('.overlay.show
   /* [hub-portal] 从共享配置 pha-config 补全 owner/repo/token（仅填空缺，不覆盖已填，不改 path） */
   try{var _pha=JSON.parse(localStorage.getItem('pha-config')||'null');if(_pha){if(!config.owner&&_pha.owner)config.owner=_pha.owner;if(!config.repo&&_pha.repo)config.repo=_pha.repo;if(!config.token&&_pha.token)config.token=_pha.token;}}catch(e){}
   loadCache();          // 先用本地缓存秒开
+  applyStatic();
   render();
-  if(configured()){ setSync('ok','已连接'); ghPull(); }   // 再拉取最新
-  else setSync('idle','未配置');
+  if(configured()){ setSync('ok',T('已连接','Connected')); ghPull(); }   // 再拉取最新
+  else setSync('idle',T('未配置','Not configured'));
 })();
 </script>
 </body>
