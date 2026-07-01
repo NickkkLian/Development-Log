@@ -363,9 +363,15 @@
   <div class="modal">
     <h3><span class="blip"></span><span id="projModalTitle">新建项目</span></h3>
     <div class="modal-body">
-      <div class="field">
-        <label><span data-i18n="fl_name">项目名称</span> <span class="req">*</span></label>
-        <input id="f_name" data-i18n-ph="ph_name" placeholder="例如：个人作品集网站" />
+      <div class="grid2">
+        <div class="field">
+          <label><span data-i18n="fl_name">项目名称（中文）</span> <span class="req">*</span></label>
+          <input id="f_name" data-i18n-ph="ph_name" placeholder="例如：个人作品集网站" />
+        </div>
+        <div class="field">
+          <label><span data-i18n="fl_nameEn">英文名称（公开展示）</span></label>
+          <input id="f_nameEn" data-i18n-ph="ph_nameEn" placeholder="e.g. Personal portfolio site" />
+        </div>
       </div>
       <div class="grid2">
         <div class="field">
@@ -388,8 +394,13 @@
         </div>
       </div>
       <div class="field">
-        <label data-i18n="fl_desc">描述</label>
+        <label data-i18n="fl_desc">描述（中文）</label>
         <textarea id="f_desc" data-i18n-ph="ph_desc" placeholder="项目简介、用到的技术、背景等…"></textarea>
+      </div>
+      <div class="field">
+        <label data-i18n="fl_descEn">英文描述（公开展示）</label>
+        <textarea id="f_descEn" data-i18n-ph="ph_descEn" placeholder="English summary shown on the public site…"></textarea>
+        <div class="hint" data-i18n="hint_bilingual">勾选「公开展示」的项目会在个人网站上按中/英分别显示；英文留空则回退显示中文。</div>
       </div>
       <div class="field">
         <label data-i18n="fl_feat">最新版本功能介绍</label>
@@ -572,6 +583,9 @@ const STATUS_LABEL_EN = { delivered:'Delivered', inuse:'In use', wip:'WIP', idea
 const typeLabel = t => lang === 'en' ? (TYPE_LABEL_EN[t] || t) : (TYPE_LABEL[t] || t);
 const statusLabel = s => lang === 'en' ? (STATUS_LABEL_EN[s] || s) : (STATUS_LABEL[s] || s);
 const kindLabel = k => k === 'major' ? T('大版本','Major') : T('小版本','Minor');
+// 项目名/描述的双语取值：中文界面优先中文，英文界面优先英文，缺失回退另一语言
+const projName = p => (lang==='en' ? (p.nameEn||p.name) : (p.name||p.nameEn)) || '';
+const projDesc = p => (lang==='en' ? (p.descEn||p.desc) : (p.desc||p.descEn)) || '';
 const I18N = {
   logoSub:{zh:'开发日志台账',en:'Development Log'},
   pullT:{zh:'从 GitHub 拉取',en:'Pull from GitHub'},
@@ -587,8 +601,8 @@ const I18N = {
   sb_created:{zh:'按创建时间',en:'By created'},
   sb_name:{zh:'按名称',en:'By name'},
   importBtn:{zh:'导入归档',en:'Import'},
-  exportBtn:{zh:'导出展示数据',en:'Export public'},
-  exportBtnT:{zh:'把勾选了「公开展示」的条目导出为 JSON',en:'Export items marked public as JSON'},
+  exportBtn:{zh:'发布公开数据',en:'Publish public'},
+  exportBtnT:{zh:'把勾选「公开展示」的条目发布到公开数据仓库 Database-Public（未连接 GitHub 时改为本地下载）',en:'Publish items marked public to the Database-Public repo (downloads locally if GitHub isn’t connected)'},
   addBtn:{zh:'新建项目',en:'New project'},
   ch_all:{zh:'全部',en:'All'},
   ty_commercial:{zh:'商业项目',en:'Commercial'},
@@ -596,12 +610,17 @@ const I18N = {
   ty_personal:{zh:'个人项目',en:'Personal'},
   ty_fun:{zh:'做着好玩',en:'For Fun'},
   // project modal
-  fl_name:{zh:'项目名称',en:'Project name'},
-  ph_name:{zh:'例如：个人作品集网站',en:'e.g. Personal portfolio site'},
+  fl_name:{zh:'项目名称（中文）',en:'Project name (Chinese)'},
+  ph_name:{zh:'例如：个人作品集网站',en:'e.g. 个人作品集网站'},
+  fl_nameEn:{zh:'英文名称（公开展示）',en:'English name (public)'},
+  ph_nameEn:{zh:'例如：Personal portfolio site',en:'e.g. Personal portfolio site'},
   fl_type:{zh:'开发类型',en:'Type'},
   fl_status:{zh:'状态',en:'Status'},
-  fl_desc:{zh:'描述',en:'Description'},
+  fl_desc:{zh:'描述（中文）',en:'Description (Chinese)'},
   ph_desc:{zh:'项目简介、用到的技术、背景等…',en:'Summary, tech stack, background…'},
+  fl_descEn:{zh:'英文描述（公开展示）',en:'English description (public)'},
+  ph_descEn:{zh:'公开网站上显示的英文简介…',en:'English summary shown on the public site…'},
+  hint_bilingual:{zh:'勾选「公开展示」的项目会在个人网站上按中/英分别显示；英文留空则回退显示中文。',en:'Public items display separately in EN/ZH on your site; leave English blank to fall back to Chinese.'},
   fl_feat:{zh:'最新版本功能介绍',en:'Current feature intro'},
   ph_feat:{zh:'当前版本能做什么、面向用户的核心价值…（每次更新后修改这里）',en:'What the current version does, core value for users… (update after each release)'},
   hint_feat:{zh:'这是展示在卡片里的「当前版本能力」。展开项目后可一键复制更新 Prompt，让 AI 帮你重写。',en:'This is the “current capability” shown on the card. Expand a project to copy an update prompt and let AI rewrite it.'},
@@ -814,6 +833,8 @@ function normalize(d){
   if(!d.meta.updatePrompt) d.meta.updatePrompt = DEFAULT_PROMPT;
   d.projects.forEach(p=>{
     p.id = p.id || uid();
+    if(typeof p.nameEn !== 'string') p.nameEn = '';
+    if(typeof p.descEn !== 'string') p.descEn = '';
     if(typeof p.featureIntro !== 'string') p.featureIntro = '';
     if(typeof p.notes !== 'string') p.notes = '';
     if(typeof p.public !== 'boolean') p.public = false;
@@ -910,7 +931,7 @@ function renderList(){
   if(filter.q){
     const q = filter.q.toLowerCase();
     ps = ps.filter(p=>{
-      const hay = [p.name,p.desc,p.featureIntro,...(p.updates||[]).map(u=>u.note)].join(' ').toLowerCase();
+      const hay = [p.name,p.nameEn,p.desc,p.descEn,p.featureIntro,...(p.updates||[]).map(u=>u.note)].join(' ').toLowerCase();
       return hay.includes(q);
     });
   }
@@ -957,11 +978,11 @@ function renderList(){
         <div class="card-body">
           <div class="card-title">
             <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
-            ${esc(p.name||T('(未命名)','(Untitled)'))}
+            ${esc(projName(p)||T('(未命名)','(Untitled)'))}
             <span class="tag type-${p.type}">${typeLabel(p.type)}</span>
             <span class="status ${p.status}"><span class="sd"></span>${statusLabel(p.status)}</span>
           </div>
-          ${p.desc?`<div class="card-desc">${esc(p.desc)}</div>`:''}
+          ${projDesc(p)?`<div class="card-desc">${esc(projDesc(p))}</div>`:''}
           <div class="meta-row">
             <span class="vtag">v${ver}</span>
             ${p.public?`<span class="pub-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>${T('公开','Public')}</span>`:''}
@@ -1082,9 +1103,11 @@ function openProjModal(id){
   const p = id ? data.projects.find(x=>x.id===id) : null;
   $('#projModalTitle').textContent = p ? T('编辑项目','Edit project') : T('新建项目','New project');
   $('#f_name').value = p?.name||'';
+  $('#f_nameEn').value = p?.nameEn||'';
   $('#f_type').value = p?.type||'personal';
   $('#f_status').value = p?.status||'idea';
   $('#f_desc').value = p?.desc||'';
+  $('#f_descEn').value = p?.descEn||'';
   $('#f_feat').value = p?.featureIntro||'';
   $('#f_notes').value = p?.notes||'';
   $('#f_public').checked = !!p?.public;
@@ -1097,9 +1120,11 @@ $('#saveProj').addEventListener('click', ()=>{
   if(!name){ toast(T('请填写项目名称','Enter a project name'), true); return; }
   const payload = {
     name,
+    nameEn: $('#f_nameEn').value.trim(),
     type: $('#f_type').value,
     status: $('#f_status').value,
     desc: $('#f_desc').value.trim(),
+    descEn: $('#f_descEn').value.trim(),
     featureIntro: $('#f_feat').value.trim(),
     notes: $('#f_notes').value.trim(),
     public: $('#f_public').checked,
@@ -1223,6 +1248,8 @@ function mergeImport(incoming){
     const exist = data.projects.find(p=> (p.name||'').trim().toLowerCase() === String(src.name).trim().toLowerCase());
     if(exist){
       if(src.desc) exist.desc = src.desc;
+      if(src.nameEn) exist.nameEn = src.nameEn;
+      if(src.descEn) exist.descEn = src.descEn;
       if(src.featureIntro) exist.featureIntro = src.featureIntro;
       if(src.notes) exist.notes = src.notes;
       if(src.type && TYPE_LABEL[src.type]) exist.type = src.type;
@@ -1236,10 +1263,10 @@ function mergeImport(incoming){
       report.merged.push({name:exist.name,n:cnt}); report.updates+=cnt;
     }else{
       const np = {
-        id:uid(), name:String(src.name),
+        id:uid(), name:String(src.name), nameEn:src.nameEn||'',
         type:(src.type && TYPE_LABEL[src.type])?src.type:'personal',
         status:(src.status && STATUS_LABEL[src.status])?src.status:'wip',
-        desc:src.desc||'', featureIntro:src.featureIntro||'', notes:src.notes||'',
+        desc:src.desc||'', descEn:src.descEn||'', featureIntro:src.featureIntro||'', notes:src.notes||'',
         repoUrl:src.repoUrl||'', liveUrl:src.liveUrl||'',
         createdAt:(src.createdAt||'').trim()||today(),
         updates: ups.map(norm)
@@ -1278,11 +1305,15 @@ function buildExportData(){
     label: TYPE_LABEL[t] || t,
     items: pubs.filter(p=>p.type===t).map(p=>({
       id: p.id,
-      name: p.name || '',
-      summary: p.desc || '',
+      name: { zh: p.name||'', en: p.nameEn||p.name||'' },
+      summary: { zh: p.desc||'', en: p.descEn||p.desc||'' },
       category: TYPE_LABEL[p.type] || '',
       content: p.featureIntro || '',
       tags: [],
+      links: [
+        ...(p.repoUrl ? [{label:'GitHub', url:p.repoUrl}] : []),
+        ...(p.liveUrl ? [{label:'Live', url:p.liveUrl}] : []),
+      ],
       updatedAt: lastUpdateTime(p) || ''
     }))
   }));
